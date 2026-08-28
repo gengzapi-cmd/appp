@@ -102,4 +102,24 @@ object YtDlpDownloader {
 
         throw Exception("Gagal mengekstrak media dengan yt-dlp. Periksa tautan video.")
     }
+
+    suspend fun getVideoInfo(url: String): String? = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext null
+        val request = YoutubeDLRequest(url).apply {
+            addOption("-J")
+        }
+        try {
+            val response = YoutubeDL.getInstance().execute(request)
+            val jsonStr = response.out
+            val json = com.google.gson.JsonParser.parseString(jsonStr).asJsonObject
+            val title = json.get("title")?.asString?.replace("\"", "\\\"")?.replace("\n", " ") ?: "Video"
+            val thumbnail = json.get("thumbnail")?.asString ?: ""
+            val uploader = json.get("uploader")?.asString?.replace("\"", "\\\"") ?: "YouTube"
+            val platform = if (url.contains("youtube", ignoreCase = true) || url.contains("youtu.be", ignoreCase = true)) "youtube" else "generic"
+            "{\"title\": \"$title\", \"thumbnail\": \"$thumbnail\", \"uploader\": \"$uploader\", \"platform\": \"$platform\"}"
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

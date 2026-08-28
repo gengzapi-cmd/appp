@@ -5,6 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import android.webkit.JavascriptInterface
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WebAppInterface(private val context: Context) {
 
@@ -44,6 +48,45 @@ class WebAppInterface(private val context: Context) {
     @JavascriptInterface
     fun isEngineReady(): Boolean {
         return YtDlpDownloader.isReady()
+    }
+
+    @JavascriptInterface
+    fun fetchVideoInfo(url: String) {
+        val mainActivity = context as? MainActivity ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val isTikTok = url.contains("tiktok.com", ignoreCase = true) || url.contains("tikwm.com", ignoreCase = true)
+                if (isTikTok) {
+                    val result = TikTokDownloader.extractTikTokMedia(url)
+                    if (result != null) {
+                        val title = result.title.replace("\"", "\\\"").replace("\n", " ")
+                        val cover = result.coverUrl ?: ""
+                        val author = result.author?.replace("\"", "\\\"") ?: ""
+                        val jsonStr = "{\"title\": \"$title\", \"thumbnail\": \"$cover\", \"uploader\": \"$author\", \"platform\": \"tiktok\"}"
+                        withContext(Dispatchers.Main) {
+                            mainActivity.webView.evaluateJavascript("if(window.onVideoInfoReady) window.onVideoInfoReady($jsonStr);", null)
+                        }
+                    } else {
+                        throw Exception("Gagal mendapatkan info TikTok")
+                    }
+                } else {
+                    // YouTube or others
+                    val jsonStr = YtDlpDownloader.getVideoInfo(url)
+                    if (jsonStr != null) {
+                        withContext(Dispatchers.Main) {
+                            mainActivity.webView.evaluateJavascript("if(window.onVideoInfoReady) window.onVideoInfoReady($jsonStr);", null)
+                        }
+                    } else {
+                        throw Exception("Gagal mendapat info video")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    val errorMsg = e.message?.replace("'", "\\'")?.replace("\n", " ") ?: "Error tidak diketahui"
+                    mainActivity.webView.evaluateJavascript("if(window.onVideoInfoError) window.onVideoInfoError('$errorMsg');", null)
+                }
+            }
+        }
     }
 
     @JavascriptInterface

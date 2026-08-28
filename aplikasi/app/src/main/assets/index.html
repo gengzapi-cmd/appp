@@ -5170,172 +5170,13 @@
       if (dropdownTrigger) dropdownTrigger.classList.remove('active');
       if (optionsList) optionsList.classList.remove('active');
 
-      // Link Format Analyzers
-      const isTikTokSlide = val.includes('slide') || val.includes('photo');
-      const isYoutubeLive = val.includes('youtube') && val.includes('live');
-      const isYoutubeReels = (val.includes('youtube') || val.includes('youtu.be')) && (val.includes('shorts') || val.includes('reels'));
-      const isYoutubeStandard = (val.includes('youtube') || val.includes('youtu.be')) && !isYoutubeLive && !isYoutubeReels;
-
-      const ytImg = `<img src="yt.png" width="18" height="18" style="object-fit: contain;">`;
-      const ttImg = `<img src="tiktok.png" width="18" height="18" style="object-fit: contain;">`;
-
-      if (isTikTokSlide) {
-        // 1. TikTok Photo Slide (Carousels)
-        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge tiktok';
-        if (previewPlatformName) previewPlatformName.innerText = 'TikTok Photo';
-        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ttImg;
-        if (previewCreator) previewCreator.innerText = '@nature_vibes';
-        if (previewVideoTitle) previewVideoTitle.innerText = 'Aesthetic Photo Collection #Slide 2026';
-        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Foto & Format';
-
-        if (previewMediaContainer) {
-          previewMediaContainer.innerHTML = `
-            <div class="preview-banner-box">
-              <span class="slide-number-badge" id="slideBadge">Slide 1</span>
-              <div class="slide-carousel-wrapper" id="slideCarousel" onscroll="updateSlideIndicator(this)">
-                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 1">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 2">
-                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 3">
-              </div>
-            </div>
-            <div class="slide-dots-container">
-              <span class="slide-dot-item active"></span>
-              <span class="slide-dot-item"></span>
-              <span class="slide-dot-item"></span>
-            </div>
-          `;
-        }
-
-        if (optionsList) {
-          optionsList.innerHTML = `
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">Slide 1 Foto</span><span class="option-sub">JPG • 2.1 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('Slide 1 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">Slide 2 Foto</span><span class="option-sub">JPG • 1.9 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('Slide 2 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">Slide 3 Foto</span><span class="option-sub">JPG • 2.4 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('Slide 3 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">Semua Foto (ZIP)</span><span class="option-sub">Paket Foto • 6.4 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('Semua Slide ZIP')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh ZIP</span></button>
-            </div>
-          `;
-        }
-      } else if (isYoutubeLive) {
-        // 2. YouTube Live Stream (Landscape)
-        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube-live';
-        if (previewPlatformName) previewPlatformName.innerText = 'YouTube Live';
-        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
-        if (previewCreator) previewCreator.innerText = '@LiveGamingHQ';
-        if (previewVideoTitle) previewVideoTitle.innerText = '🔴 LIVE STREAM - Esports World Championship Final 2026';
-        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
-
-        if (previewMediaContainer) {
-          previewMediaContainer.innerHTML = `
-            <div class="preview-banner-box youtube-aspect">
-              <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="Live Thumbnail">
-            </div>
-          `;
-        }
-
-        if (optionsList) {
-          optionsList.innerHTML = `
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 450 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('1080p Full HD')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 210 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('720p HD')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-            <div class="option-item">
-              <div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 45 MB</span></div>
-              <button class="option-download-btn" onclick="downloadFile('Audio MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
-            </div>
-          `;
-        }
-      } else if (isYoutubeReels) {
-        // 3. YouTube Shorts / Reels (Portrait)
-        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube';
-        if (previewPlatformName) previewPlatformName.innerText = 'YouTube Shorts';
-        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
-        if (previewCreator) previewCreator.innerText = '@ShortsCreator';
-        if (previewVideoTitle) previewVideoTitle.innerText = 'Amazing Skateboard Trick #Shorts #2026';
-        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
-
-        if (previewMediaContainer) {
-          previewMediaContainer.innerHTML = `
-            <div class="preview-banner-box">
-              <img src="https://images.unsplash.com/photo-1520116468816-95b69f847357?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="Shorts Thumbnail">
-            </div>
-          `;
-        }
-
-        if (optionsList) {
-          optionsList.innerHTML = `
-            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 18.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 10.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 2.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-          `;
-        }
-      } else if (isYoutubeStandard) {
-        // 4. YouTube Standard Video (Landscape)
-        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube';
-        if (previewPlatformName) previewPlatformName.innerText = 'YouTube';
-        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
-        if (previewCreator) previewCreator.innerText = '@ReyaChannel';
-        if (previewVideoTitle) previewVideoTitle.innerText = 'Cinematic Vlog 2026 - High Resolution Video';
-        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
-
-        if (previewMediaContainer) {
-          previewMediaContainer.innerHTML = `
-            <div class="preview-banner-box youtube-aspect">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="YouTube Thumbnail">
-            </div>
-          `;
-        }
-
-        if (optionsList) {
-          optionsList.innerHTML = `
-            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 45.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 22.1 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">480p SD</span><span class="option-sub">MP4 • 12.8 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 480p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 5.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-          `;
-        }
-      } else {
-        // 5. Default TikTok Video (Portrait)
-        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge tiktok';
-        if (previewPlatformName) previewPlatformName.innerText = 'TikTok';
-        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ttImg;
-        if (previewCreator) previewCreator.innerText = '@reyaramani458';
-        if (previewVideoTitle) previewVideoTitle.innerText = 'Aesthetic Sunset Cinematic Vlog #2026 - High Quality Short';
-        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
-
-        if (previewMediaContainer) {
-          previewMediaContainer.innerHTML = `
-            <div class="preview-banner-box">
-              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="TikTok Thumbnail">
-            </div>
-          `;
-        }
-
-        if (optionsList) {
-          optionsList.innerHTML = `
-            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 24.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 14.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">480p SD</span><span class="option-sub">MP4 • 8.1 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 480p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 3.8 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
-          `;
-        }
-      }
-
-      // SMOOTHLY TRANSITION FROM PLACEHOLDER TO PREVIEW CARD WITH BLUR-IN KEYFRAME!
+      // Remove Dummy Link Format Analyzers and HTML injections
+      // Add loading state:
+      if (previewPlatformName) previewPlatformName.innerText = 'Mengambil data...';
+      if (previewCreator) previewCreator.innerText = '';
+      if (previewVideoTitle) previewVideoTitle.innerText = 'Harap tunggu...';
+      if (previewMediaContainer) previewMediaContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: white;">Sedang memproses tautan...</div>';
+      
       const previewPlaceholder = document.getElementById('previewPlaceholder');
       const previewCard = document.getElementById('previewCard');
 
@@ -5348,14 +5189,65 @@
             void previewCard.offsetWidth; // Trigger reflow for keyframes
             previewCard.classList.add('show');
           }
-          showToast("tautan di temukan");
         }, 320);
       } else if (previewCard) {
         previewCard.classList.remove('show');
         void previewCard.offsetWidth; // Trigger reflow for re-animation on consecutive searches
         previewCard.classList.add('show');
-        showToast("tautan di temukan");
       }
+
+      if (window.AndroidBridge && window.AndroidBridge.fetchVideoInfo) {
+        window.AndroidBridge.fetchVideoInfo(rawVal);
+      } else {
+        showToast("Error: Native Bridge tidak tersedia", true);
+      }
+    }
+
+    window.onVideoInfoReady = function(info) {
+      const previewMediaContainer = document.getElementById('previewMediaContainer');
+      const previewPlatformBadge = document.getElementById('previewPlatformBadge');
+      const previewPlatformName = document.getElementById('previewPlatformName');
+      const previewPlatformIcon = document.getElementById('previewPlatformIcon');
+      const previewCreator = document.getElementById('previewCreator');
+      const previewVideoTitle = document.getElementById('previewVideoTitle');
+      const optionsList = document.getElementById('optionsList');
+      const dropdownLabel = document.getElementById('dropdownLabel');
+
+      showToast("tautan di temukan");
+
+      const isTikTok = info.platform === 'tiktok';
+      
+      const ytImg = `<img src="yt.png" width="18" height="18" style="object-fit: contain;">`;
+      const ttImg = `<img src="tiktok.png" width="18" height="18" style="object-fit: contain;">`;
+
+      if (previewPlatformBadge) previewPlatformBadge.className = isTikTok ? 'platform-badge tiktok' : 'platform-badge youtube';
+      if (previewPlatformName) previewPlatformName.innerText = isTikTok ? 'TikTok' : 'YouTube';
+      if (previewPlatformIcon) previewPlatformIcon.innerHTML = isTikTok ? ttImg : ytImg;
+      if (previewCreator) previewCreator.innerText = info.uploader || 'Creator';
+      if (previewVideoTitle) previewVideoTitle.innerText = info.title || 'Video';
+      if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
+
+      if (previewMediaContainer) {
+        previewMediaContainer.innerHTML = `
+          <div class="preview-banner-box ${isTikTok ? '' : 'youtube-aspect'}">
+            <img src="${info.thumbnail}" class="preview-banner-img" alt="Thumbnail">
+          </div>
+        `;
+      }
+      if (optionsList) {
+        optionsList.innerHTML = `
+          <div class="option-item"><div class="option-info"><span class="option-res">Best Video</span><span class="option-sub">MP4</span></div><button class="option-download-btn" onclick="downloadFile('Best Video', 'mp4')"><span>Unduh</span></button></div>
+          <div class="option-item"><div class="option-info"><span class="option-res">1080p HD</span><span class="option-sub">MP4</span></div><button class="option-download-btn" onclick="downloadFile('1080p', 'mp4')"><span>Unduh</span></button></div>
+          <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4</span></div><button class="option-download-btn" onclick="downloadFile('720p', 'mp4')"><span>Unduh</span></button></div>
+          <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3</span></div><button class="option-download-btn" onclick="downloadFile('Audio', 'mp3')"><span>Unduh</span></button></div>
+        `;
+      }
+    };
+
+    window.onVideoInfoError = function(err) {
+      showToast("tautan tidak valid", true);
+      const previewVideoTitle = document.getElementById('previewVideoTitle');
+      if (previewVideoTitle) previewVideoTitle.innerText = "Error: " + err;
     }
 
     function startAppLoading() {
@@ -5412,56 +5304,38 @@
           };
 
           const progressTimer = setInterval(() => {
-            // Check native bridge continuously
             if (window.AndroidBridge && window.AndroidBridge.isEngineReady && window.AndroidBridge.isEngineReady()) {
               engineFullyReady = true;
             }
 
             if (!engineFullyReady) {
-              // Hold at 85% until native binary extraction/initialization actually completes
               if (progress < 85) {
-                progress += 1.5;
+                progress += 5.0; // Faster progress until it waits
               }
+              if (barLogText) barLogText.innerText = "MENUNGGU ENGINE NATIVE... " + Math.round(progress) + "%";
             } else {
-              // Rapidly complete to 100% when native engine is verified ready
-              progress += 5.0;
+              progress = 100; // Instantly finish
+              if (barLogText) barLogText.innerText = "MESIN READY 100%";
             }
 
             if (progress > 100) progress = 100;
             if (progressFill) progressFill.style.width = progress + '%';
 
-            const pct = Math.round(progress);
-            let logMsg = "MENYIAPKAN CORE ENGINE...";
-            if (pct > 20 && pct <= 40) logMsg = "MENGINSTALL MESIN TIKTOK DEDICATED...";
-            else if (pct > 40 && pct <= 65) logMsg = "MENGINSTALL BINARY FFMPEG & YT-DLP...";
-            else if (pct > 65 && pct <= 85) logMsg = engineFullyReady ? "VERIFIKASI AKSELERASI MESIN..." : "MEMPROSES INISIALISASI NATIVE BINARY...";
-            else if (pct > 85 && pct < 100) logMsg = "MENYELENGGARAKAN ENGINE NATIVE...";
-            else if (pct >= 100) logMsg = "MESIN READY 100%";
-
-            if (barLogText) barLogText.innerText = `${logMsg} ${pct}%`;
-
-            if (progress >= 90 && catVideo) {
-              catVideo.playbackRate = 1.0;
-            }
-
-            // Only enter main app screen when progress is 100% AND native engine is VERIFIED READY!
             if (progress >= 100 && (engineFullyReady || !window.AndroidBridge)) {
               clearInterval(progressTimer);
-              if (barLogText) barLogText.innerText = "SELESAI 100%";
-
               setTimeout(() => {
                 mainAppScreen.style.display = 'flex';
                 requestAnimationFrame(() => {
                   mainAppScreen.classList.add('active');
                 });
 
-                bottomSheet.style.transition = "opacity 2.0s ease-in-out";
+                bottomSheet.style.transition = "opacity 0.5s ease-in-out";
                 bottomSheet.style.opacity = "0";
 
                 setTimeout(() => {
                   bottomSheet.style.display = 'none';
-                }, 2000);
-              }, 400);
+                }, 500);
+              }, 200);
             }
           }, 50);
         }, 650);
