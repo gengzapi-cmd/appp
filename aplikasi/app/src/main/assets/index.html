@@ -19,6 +19,15 @@
       -webkit-font-smoothing: antialiased;
       scrollbar-width: none !important;
       -ms-overflow-style: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
     }
 
     *::-webkit-scrollbar {
@@ -1227,39 +1236,40 @@
     }
 
     .social-icon {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
       overflow: hidden;
     }
 
     .social-icon.tiktok {
       background: #000000;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
     }
 
     .social-icon.tiktok img {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
       border-radius: 50%;
     }
 
     .social-icon.youtube {
       background: #FFFFFF;
-      border: 1px solid #E5E7EB;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      border: 1.5px solid #CBD5E1;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .social-icon.youtube img {
-      width: 42px;
-      height: 42px;
-      object-fit: contain;
-      border-radius: 50%;
+    .social-icon.youtube svg {
+      width: 32px;
+      height: 23px;
     }
 
     .social-icon.facebook {
@@ -3392,7 +3402,7 @@
 
   <!-- Mobile Frame Container -->
   <div class="phone-frame">
-    <div class="phone-screen is-booting">
+    <div class="phone-screen">
       <!-- Mesh Pattern Background -->
       <div class="mesh-pattern-overlay"></div>
 
@@ -3481,7 +3491,10 @@
 
               <div class="social-item" onclick="openApp('youtube')">
                 <div class="social-icon youtube">
-                  <img src="yt.png" alt="YouTube">
+                  <svg width="32" height="23" viewBox="0 0 28 20" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.4118 3.07692C27.0882 1.86813 26.1412 0.916484 24.9412 0.589011C22.7647 0 14 0 14 0C14 0 5.23529 0 3.05882 0.589011C1.85882 0.916484 0.911765 1.86813 0.588235 3.07692C0 5.27473 0 9.89011 0 9.89011C0 9.89011 0 14.5055 0.588235 16.7033C0.911765 17.9121 1.85882 18.8637 3.05882 19.1912C5.23529 19.7802 14 19.7802 14 19.7802C14 19.7802 22.7647 19.7802 24.9412 19.1912C26.1412 18.8637 27.0882 17.9121 27.4118 16.7033C28 14.5055 28 9.89011 28 9.89011C28 9.89011 28 5.27473 27.4118 3.07692Z" fill="#FF0000"/>
+                    <path d="M11.2 14.1209V5.65934L18.48 9.89011L11.2 14.1209Z" fill="white"/>
+                  </svg>
                 </div>
                 <span class="social-label">YouTube</span>
               </div>
@@ -5374,13 +5387,26 @@
       showToast('memeriksa pembaruan');
     }
 
-    // Auto cleanup boot animation overlay & is-booting class after 2.1s so interactive rotation works 100% seamlessly
-    setTimeout(() => {
+    // Smooth boot animation trigger after WebView first paint
+    function initBootAnimation() {
       const screen = document.querySelector('.phone-screen');
-      if (screen) screen.classList.remove('is-booting');
-      const curtain = document.getElementById('appBootCurtain');
-      if (curtain) curtain.remove();
-    }, 2100);
+      if (screen) {
+        screen.classList.add('is-booting');
+      }
+      setTimeout(() => {
+        if (screen) screen.classList.remove('is-booting');
+        const curtain = document.getElementById('appBootCurtain');
+        if (curtain) curtain.remove();
+      }, 2300);
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(initBootAnimation, 100);
+    } else {
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initBootAnimation, 100);
+      });
+    }
   </script>
 </body>
 

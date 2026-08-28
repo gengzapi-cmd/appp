@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebViewSettings() {
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         val settings: WebSettings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
