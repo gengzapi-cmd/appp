@@ -1,0 +1,5387 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SnapCat - Video Downloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    /* Ambient Rose-Red Background Backdrop */
+    body {
+      font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+      background: #000;
+      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      transition: background 0.4s ease;
+    }
+
+    body.dark-theme {
+      background: #090D16 !important;
+    }
+
+    /* Fullscreen View for Native App & Mobile Screens */
+    .phone-frame {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Desktop Mockup Preview (hanya aktif jika dibuka di browser PC layar besar) */
+    @media (min-width: 600px) and (min-height: 800px) {
+      body {
+        background: linear-gradient(135deg, #FFE4E6 0%, #FFF1F2 50%, #FECDD3 100%);
+        padding: 20px;
+      }
+      body.dark-theme {
+        background: linear-gradient(135deg, #090D16 0%, #0F172A 50%, #020617 100%) !important;
+      }
+      .phone-frame {
+        width: 360px;
+        height: 740px;
+        border-radius: 46px;
+        border: 8px solid #1C1B22;
+        box-shadow: 0 25px 60px -15px rgba(220, 38, 38, 0.35),
+          0 0 0 2px rgba(239, 68, 68, 0.4);
+      }
+    }
+
+    /* Screen Container */
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(155deg, #F87171 0%, #EF4444 45%, #991B1B 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      animation: initialPageFadeIn 0.6s ease forwards;
+    }
+
+    @keyframes initialPageFadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Soft Mesh Overlay */
+    .mesh-pattern-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60%;
+      background-image:
+        radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.22) 0%, transparent 65%),
+        linear-gradient(45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.08) 75%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.08) 75%);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      background-position: 0 0, 0 0, 20px 20px;
+      pointer-events: none;
+    }
+
+    .upper-spacer {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* ========================================================
+       CIRCULAR SPLASH SCREEN & ONBOARDING FLOW
+       ======================================================== */
+    .initial-red-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(155deg, var(--accent-primary, #EF4444) 0%, var(--accent-secondary, #DC2626) 100%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: opacity 0.5s ease;
+    }
+
+    .white-circle-bottom {
+      position: absolute;
+      bottom: -340px;
+      left: 50%;
+      transform: translateX(-50%) rotate(0deg);
+      transform-origin: center center;
+      width: 680px;
+      height: 680px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.15);
+      z-index: 110;
+      transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 4 CARDINAL LOGO POINTS AROUND THE CIRCLE WHEEL */
+    .circle-logo-point {
+      position: absolute;
+      width: 86px;
+      height: 86px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 10px 28px rgba(239, 68, 68, 0.45);
+      border: 3.5px solid #FFFFFF;
+      z-index: 120;
+    }
+
+    .circle-logo-point.point-top {
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .circle-logo-point.point-right {
+      top: 50%;
+      right: 0;
+      transform: translate(50%, -50%);
+    }
+
+    .circle-logo-point.point-bottom {
+      bottom: 0;
+      left: 50%;
+      transform: translate(-50%, 50%);
+    }
+
+    .circle-logo-point.point-left {
+      top: 50%;
+      left: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    .inner-icon-counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .splash-text-wrapper {
+      position: absolute;
+      bottom: 122px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      max-width: 290px;
+      height: 145px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      z-index: 140;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .app-tag-pill {
+      background: #FEE2E2;
+      padding: 5px 16px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 25px;
+      box-sizing: border-box;
+    }
+
+    .app-tag-pill span {
+      font-size: 12px;
+      font-weight: 800;
+      color: #DC2626;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .splash-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111827;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .splash-subtitle {
+      font-size: 15px;
+      color: #4B5563;
+      font-weight: 500;
+      line-height: 1.4;
+      margin: 0;
+      width: 100%;
+      max-width: 290px;
+      min-height: 48px;
+      display: block;
+      text-align: center;
+    }
+
+    .splash-text-wrapper.fade-out {
+      opacity: 0;
+      transform: translateX(-50%) translateY(8px);
+    }
+
+    .splash-text-wrapper.fade-in {
+      animation: textFadeIn 0.25s ease forwards;
+    }
+
+    @keyframes textFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .splash-dots-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      z-index: 140;
+    }
+
+    .splash-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #E5E7EB;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+
+    .splash-dot.active {
+      width: 22px;
+      border-radius: 10px;
+      background: #EF4444;
+    }
+
+    .splash-arrow-btn {
+      position: absolute;
+      bottom: 55px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.4);
+      z-index: 130;
+      overflow: hidden;
+      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-radius 0.3s ease;
+    }
+
+    .btn-icon-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.15s ease;
+    }
+
+    .btn-text-state {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      opacity: 0;
+      transition: opacity 0.2s ease 0.1s;
+    }
+
+    .splash-arrow-btn.is-final-step {
+      width: 220px;
+      height: 54px;
+      border-radius: 20px;
+      box-shadow: 0 12px 28px rgba(239, 68, 68, 0.45);
+    }
+
+    .splash-arrow-btn.is-final-step .btn-icon-state {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-arrow-btn.is-final-step .btn-text-state {
+      opacity: 1;
+    }
+
+    .splash-arrow-btn:hover {
+      transform: translateX(-50%) scale(1.06);
+    }
+
+    .splash-arrow-btn:active {
+      transform: translateX(-50%) scale(0.94);
+    }
+
+    /* FULLSCREEN WHITE CIRCLE ZOOM EXIT ANIMATION */
+    .initial-red-screen.exiting .splash-text-wrapper,
+    .initial-red-screen.exiting .splash-dots-container,
+    .initial-red-screen.exiting .circle-logo-point {
+      opacity: 0 !important;
+      transform: scale(0.8) !important;
+      transition: opacity 0.25s ease, transform 0.25s ease !important;
+    }
+
+    .initial-red-screen.exiting .splash-arrow-btn {
+      opacity: 0 !important;
+      transform: translateX(-50%) scale(0.8) !important;
+      transition: opacity 0.25s ease, transform 0.25s ease !important;
+    }
+
+    .initial-red-screen.exiting .white-circle-bottom {
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      transform: translateX(-50%) scale(5.5) !important;
+    }
+
+    /* ========================================================
+       ANIMASI & TAMPILAN PROSES INSTALASI (SETELAH LINGKARAN MEMENUHI LAYAR)
+       ======================================================== */
+    .installation-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #FFFFFF;
+      z-index: 500;
+      display: flex;
+      opacity: 0;
+      pointer-events: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 22px;
+      box-sizing: border-box;
+      transition: opacity 0.4s ease;
+    }
+
+    .installation-container.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .install-card {
+      width: 100%;
+      max-width: 320px;
+      background: #FFFFFF;
+      border-radius: 22px;
+      padding: 26px 22px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.03);
+      border: 1px solid #F3F4F6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .install-logo-box {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 22px rgba(239, 68, 68, 0.35);
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .install-logo-box::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 22px;
+      border: 2px solid rgba(239, 68, 68, 0.3);
+      animation: logoPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: 0.15;
+      }
+    }
+
+    .install-app-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.3px;
+    }
+
+    .install-app-sub {
+      font-size: 13px;
+      color: #6B7280;
+      margin: 0 0 24px 0;
+      font-weight: 500;
+    }
+
+    /* PROGRESS TRACK & PERCENTAGE */
+    .install-progress-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .install-progress-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .install-percent-badge {
+      font-size: 14px;
+      font-weight: 800;
+      color: #EF4444;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .install-progress-track {
+      width: 100%;
+      height: 10px;
+      background: #F3F4F6;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .install-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #EF4444 0%, #F87171 50%, #DC2626 100%);
+      border-radius: 20px;
+      transition: width 0.12s linear;
+      position: relative;
+    }
+
+    .install-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+      animation: shimmerFill 1.2s infinite;
+    }
+
+    @keyframes shimmerFill {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    /* LOG BOX */
+    .install-log-box {
+      width: 100%;
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    .install-log-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #E5E7EB;
+      border-top: 2px solid #EF4444;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .install-log-text {
+      font-size: 12px;
+      color: #4B5563;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.2s ease;
+    }
+
+    /* WARNING BOX */
+    .install-warning-box {
+      width: 100%;
+      background: #FFFBEB;
+      border: 1.5px solid #FCD34D;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+
+    .install-warning-box svg {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .install-warning-text {
+      font-size: 11.5px;
+      color: #92400E;
+      line-height: 1.4;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .install-warning-text strong {
+      font-weight: 700;
+      color: #78350F;
+    }
+
+    /* ========================================================
+       ENTRANCE ANIMATION LOGIC FOR MAIN APP SCREEN AFTER INSTALLATION
+       (Red banner slides down, inner elements animate sequentially)
+       ======================================================== */
+    .main-app-screen.animate-entrance .home-header-banner {
+      animation: entranceSlideDownBanner 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .main-app-screen.animate-entrance .banner-top-row {
+      animation: entranceFadeIn 0.5s ease 0.4s both;
+    }
+
+    .main-app-screen.animate-entrance .banner-input-box {
+      animation: entranceSlideUpInput 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
+    }
+
+    .main-app-screen.animate-entrance .social-section {
+      animation: entranceSlideUpSocial 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+    }
+
+    .main-app-screen.animate-entrance .recent-section {
+      animation: entranceFadeIn 0.6s ease 0.85s both;
+    }
+
+    .floating-nav-dock.animate-entrance {
+      animation: entranceSlideUpDock 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both !important;
+    }
+
+    @keyframes entranceSlideDownBanner {
+      0% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes entranceSlideUpInput {
+      0% {
+        transform: translateY(35px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes entranceSlideUpSocial {
+      0% {
+        transform: translateY(40px) scale(0.96);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes entranceFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes entranceSlideUpDock {
+      0% {
+        transform: translateX(-50%) translateY(90px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Header Physical Pull-Up / Expand-Down Transition */
+    .home-header-banner {
+      transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1), margin 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s ease;
+    }
+
+    .home-header-banner.pull-up {
+      padding-top: 36px !important;
+      padding-bottom: 14px !important;
+      margin-bottom: 14px !important;
+      border-radius: 0 0 24px 24px !important;
+    }
+
+    .banner-input-box {
+      max-height: 80px;
+      opacity: 1;
+      transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, margin 0.4s ease, padding 0.4s ease;
+    }
+
+    .home-header-banner.pull-up .banner-input-box {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* Element entrance animation on tab switching - CLEAN & INDEPENDENT */
+    .app-tab-page.tab-entering .banner-top-row {
+      animation: entranceFadeIn 0.8s ease 0.02s forwards;
+      opacity: 0;
+    }
+
+    .app-tab-page.tab-entering .banner-input-box,
+    .app-tab-page.tab-entering .social-section,
+    .app-tab-page.tab-entering .dl-filter-bar,
+    .app-tab-page.tab-entering .dev-profile-card {
+      animation: entranceSlideUpSocial 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
+      opacity: 0;
+    }
+
+    .app-tab-page.tab-entering .recent-section,
+    .app-tab-page.tab-entering .dl-list-container,
+    .app-tab-page.tab-entering .settings-group {
+      animation: entranceSlideUpSocial 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s forwards;
+      opacity: 0;
+    }
+
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 4px;
+      background: #111827;
+      border-radius: 2px;
+      z-index: 200;
+      opacity: 0.8;
+    }
+
+    /* ========================================================
+       MAIN APP SCREEN (UNDERNEATH SPLASH SHEET - Z-INDEX 10)
+       ======================================================== */
+    .main-app-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #F3F4F6 0%, #FAFAFA 100%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      padding: 44px 18px calc(100px + env(safe-area-inset-bottom, 0px));
+      overflow-y: auto;
+      overflow-x: hidden;
+      opacity: 1;
+    }
+
+    /* Header Banner Card (Solid Red Banner - Image 2 Structure, SnapCat Red Theme) */
+    .home-header-banner {
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      margin: -44px -18px 22px -18px;
+      padding: calc(36px + env(safe-area-inset-top, 0px)) 18px 20px 18px;
+      border-radius: 0 0 32px 32px;
+      box-shadow: 0 10px 28px rgba(239, 68, 68, 0.3);
+      position: sticky;
+      top: -44px;
+      z-index: 50;
+    }
+
+    .banner-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .banner-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .banner-avatar-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-back-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .header-back-btn:active {
+      transform: scale(0.92);
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .banner-text-box .banner-app-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+
+    .banner-crown-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: none;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .banner-crown-btn::after {
+      display: none;
+    }
+
+    .banner-crown-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Banner Input Box Inside Card */
+    .banner-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 6px 6px 6px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .banner-url-input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+      background: transparent;
+    }
+
+    .banner-url-input::placeholder {
+      color: #9CA3AF;
+    }
+
+    .banner-search-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+      transition: transform 0.2s ease;
+    }
+
+    /* Red Header Banner for Secondary Pages (Unduhan & Pengaturan) */
+    .dl-header {
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      margin: -44px -18px 20px -18px;
+      padding: 48px 18px 20px 18px;
+      border-radius: 0 0 28px 28px;
+      box-shadow: 0 10px 28px rgba(239, 68, 68, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #FFFFFF;
+      position: relative;
+      z-index: 2;
+    }
+
+    .dl-back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      color: #111827;
+      transition: transform 0.2s ease;
+    }
+
+    .dl-back-btn:active {
+      transform: scale(0.92);
+    }
+
+    .dl-title-box .dl-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.4px;
+      text-align: center;
+    }
+
+    .icon-header-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: none;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .icon-header-btn:active {
+      transform: scale(0.92);
+    }
+
+    .banner-search-btn:active {
+      transform: scale(0.92);
+    }
+
+    .main-app-screen.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Top Navigation Header */
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo-box {
+      width: 42px;
+      height: 42px;
+      background: #000000;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-text .app-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+
+    .icon-header-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: none;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    /* Red Notification Badge Dot */
+    .icon-header-btn::after {
+      content: '';
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      width: 8px;
+      height: 8px;
+      background: #EF4444;
+      border-radius: 50%;
+      border: 1.5px solid #FFFFFF;
+    }
+
+    .icon-header-btn svg {
+      animation: bellBounceRing 3s ease-in-out infinite;
+      transform-origin: top center;
+    }
+
+    @keyframes bellBounceRing {
+
+      0%,
+      70%,
+      100% {
+        transform: rotate(0deg) scale(1);
+      }
+
+      75% {
+        transform: rotate(16deg) scale(1.12);
+      }
+
+      80% {
+        transform: rotate(-14deg) scale(1.12);
+      }
+
+      85% {
+        transform: rotate(9deg) scale(1.06);
+      }
+
+      90% {
+        transform: rotate(-5deg) scale(1.02);
+      }
+
+      95% {
+        transform: rotate(2deg) scale(1);
+      }
+    }
+
+    .icon-header-btn:hover svg {
+      animation: bellBounceRing 0.8s ease-in-out infinite;
+    }
+
+    .icon-header-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Link Input Bar */
+    .input-section {
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 6px 6px 6px 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+      border: 1px solid #F3F4F6;
+    }
+
+    .link-icon {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .url-input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+      background: transparent;
+    }
+
+    .url-input::placeholder {
+      color: #9CA3AF;
+    }
+
+    .paste-download-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+      transition: transform 0.2s ease;
+    }
+
+    .paste-download-btn:active {
+      transform: scale(0.92);
+    }
+
+    .disclaimer-text {
+      font-size: 10px;
+      color: #9CA3AF;
+      font-weight: 500;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* Social App Shortcuts Section */
+    .social-section {
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E5E7EB;
+    }
+
+    .section-divider span {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .social-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 48px;
+      padding: 0 4px;
+    }
+
+    .social-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .social-item:active {
+      transform: scale(0.9);
+    }
+
+    .social-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .social-icon.tiktok {
+      background: #000000;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+
+    .social-icon.tiktok img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .social-icon.youtube {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .social-icon.youtube img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .social-icon.facebook {
+      background: #1877F2;
+    }
+
+    .social-icon.twitter {
+      background: #000000;
+    }
+
+    .social-icon.pinterest {
+      background: #E60023;
+    }
+
+    .social-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4B5563;
+    }
+
+    /* Recently Download Section */
+    .recent-section {
+      margin-bottom: 20px;
+    }
+
+    .recent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .view-all-link {
+      font-size: 12px;
+      font-weight: 700;
+      color: #EF4444;
+      text-decoration: none;
+    }
+
+    /* Recently Download / Preview Section Container (Always Visible Section Header) */
+    .recent-section {
+      display: block;
+      margin-top: 24px;
+    }
+
+    /* Placeholder Box (Before pasting link) */
+    .preview-placeholder-box {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 32px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+      border: 1.5px dashed #E5E7EB;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-align: center;
+      transition: all 0.35s ease;
+    }
+
+    .preview-placeholder-box.fade-out {
+      animation: smoothPlaceholderExit 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes smoothPlaceholderExit {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(0.95);
+        height: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+    }
+
+    .placeholder-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #9CA3AF;
+      max-width: 240px;
+      line-height: 1.4;
+    }
+
+    /* ========================================================
+       REDESIGNED PRATINJAU HASIL CARD
+       ======================================================== */
+    .preview-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+      border: 1px solid #F3F4F6;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      display: none;
+    }
+
+    .preview-card.show {
+      display: flex !important;
+      animation: smoothCardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes smoothCardEntrance {
+      0% {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+        filter: blur(5px);
+      }
+
+      60% {
+        opacity: 1;
+        filter: blur(0px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+      }
+    }
+
+    /* Platform Badge & Creator Header */
+    .preview-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .platform-badge span {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+    }
+
+    .platform-badge img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .platform-badge.tiktok {
+      background: #000000;
+      color: #FFFFFF;
+      border: 1px solid #000000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .platform-badge.youtube,
+    .platform-badge.youtube-live {
+      background: #FFFFFF;
+      color: #111827;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .preview-creator-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #4B5563;
+    }
+
+    /* Full-Width Large Video Banner Thumbnail */
+    .preview-banner-box {
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      max-height: 400px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      position: relative;
+      background: #000000;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .preview-banner-box.youtube-aspect {
+      aspect-ratio: 16 / 9;
+      max-height: 220px;
+    }
+
+    .preview-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* TikTok Slide Badge & Carousel Styling - Top Centered */
+    .slide-number-badge {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+      z-index: 10;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .slide-carousel-wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      user-select: none;
+      cursor: grab;
+    }
+
+    .slide-carousel-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .slide-carousel-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .slide-carousel-item {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      object-fit: cover;
+    }
+
+    .slide-dots-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .slide-dot-item {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #D1D5DB;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .slide-dot-item.active {
+      background: #EF4444;
+      width: 16px;
+      border-radius: 8px;
+    }
+
+    .preview-title-block {
+      padding: 2px 0;
+    }
+
+    .preview-video-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.4;
+    }
+
+    /* Dropdown Options Accordion Container */
+    .download-options-container {
+      border-top: 1px solid #F3F4F6;
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .dropdown-trigger-btn {
+      width: 100%;
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .dropdown-trigger-btn:hover {
+      background: #F3F4F6;
+      border-color: #D1D5DB;
+    }
+
+    .trigger-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .dropdown-trigger-btn .arrow-icon {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dropdown-trigger-btn.active .arrow-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Options List - Silky Smooth Accordion Dropdown Animation */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      overflow: hidden;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.35s ease,
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        margin-top 0.35s ease;
+    }
+
+    .options-list.active {
+      max-height: 350px;
+      opacity: 1;
+      margin-top: 10px;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Staggered Item Entrance Animation */
+    .option-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #F9FAFB;
+      border-radius: 12px;
+      border: 1px solid #F3F4F6;
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.35s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .options-list.active .option-item {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .options-list.active .option-item:nth-child(1) {
+      transition-delay: 0.05s;
+    }
+
+    .options-list.active .option-item:nth-child(2) {
+      transition-delay: 0.10s;
+    }
+
+    .options-list.active .option-item:nth-child(3) {
+      transition-delay: 0.15s;
+    }
+
+    .options-list.active .option-item:nth-child(4) {
+      transition-delay: 0.20s;
+    }
+
+    .option-item:hover {
+      border-color: #FECDD3;
+      background: #FFF1F2;
+    }
+
+    .option-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .option-res {
+      font-size: 12px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .option-sub {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    .option-download-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--accent-glow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .option-download-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+    }
+
+    .option-download-btn:active {
+      transform: scale(0.95);
+    }
+
+
+
+    /* Premium Features Banner Card */
+    .premium-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+      border: 1px solid #F3F4F6;
+    }
+
+    .premium-icon {
+      font-size: 22px;
+    }
+
+    .premium-text h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 2px;
+    }
+
+    .premium-text p {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6B7280;
+      line-height: 1.3;
+    }
+
+    /* Primary Download Button */
+    .main-download-btn {
+      width: 100%;
+      height: 52px;
+      border-radius: 26px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 800;
+      border: none;
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.4);
+      cursor: pointer;
+      margin-top: auto;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .main-download-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Floating Bottom Navigation Dock (Solid Absolute Floating, No Sticky Jitter) */
+    .floating-nav-dock {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 36px);
+      max-width: 310px;
+      height: 62px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 31px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 50;
+    }
+
+    .nav-dock-item {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: #9CA3AF;
+      cursor: pointer;
+      padding: 6px 0;
+      flex: 1;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-dock-item:active {
+      transform: scale(0.92);
+    }
+
+    .nav-dock-item.active {
+      color: var(--accent-primary) !important;
+    }
+
+    .nav-icon-wrapper {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-dock-item.active .nav-icon-wrapper svg {
+      stroke: var(--accent-primary) !important;
+    }
+
+    .nav-dock-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+    }
+
+    /* ========================================================
+       TAB VIEW PAGES & HALAMAN UNDUHAN STYLES
+       ======================================================== */
+    .app-tab-page {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .app-tab-page.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Halaman Unduhan Header */
+    .dl-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .dl-back-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .dl-back-btn:active {
+      transform: scale(0.92);
+    }
+
+    .dl-title-box {
+      text-align: center;
+    }
+
+    .dl-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.4px;
+      line-height: 1.1;
+    }
+
+    .dl-subtitle {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    /* Filter Pills Bar (Seamless Segmented Pill Control) */
+    .dl-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 18px;
+      background: #FFFFFF;
+      padding: 4px;
+      border-radius: 999px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      border: 1px solid #F1F5F9;
+      width: 100%;
+    }
+
+    .dl-filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dl-filter-pill {
+      flex: 1;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: transparent;
+      border: none;
+      color: #64748B;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: none !important;
+      outline: none !important;
+      transition: all 0.2s ease;
+    }
+
+    .dl-filter-pill .pill-count {
+      font-size: 10.5px;
+      background: #F1F5F9;
+      color: #64748B;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .dl-filter-pill.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: #FFFFFF;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .dl-filter-pill.active .pill-count {
+      background: rgba(255, 255, 255, 0.28);
+      color: #FFFFFF;
+    }
+
+    /* Date Grouping */
+    .dl-date-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dl-date-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #6B7280;
+      letter-spacing: 0.2px;
+      margin-left: 2px;
+    }
+
+    /* Download Cards */
+    .dl-card {
+      background: #FFFFFF;
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      border: 1px solid #F3F4F6;
+      position: relative;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
+    }
+
+    .dl-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+    }
+
+    .dl-thumb-wrapper {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #111827;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .dl-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dl-duration,
+    .dl-type-tag {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .dl-type-tag.audio {
+      background: rgba(239, 68, 68, 0.9);
+    }
+
+    .dl-info-block {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .dl-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .dl-item-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dl-more-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+
+    .dl-more-btn:hover {
+      background: #F3F4F6;
+    }
+
+    .dl-item-sub {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: #6B7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Progress Box inside Card */
+    .dl-progress-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 3px;
+    }
+
+    .dl-progress-bar-track {
+      width: 100%;
+      height: 6px;
+      background: #F3F4F6;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .dl-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);
+      border-radius: 3px;
+      transition: width 0.2s linear;
+    }
+
+    .animated-stripes {
+      background-image: linear-gradient(45deg,
+          rgba(255, 255, 255, 0.25) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.25) 50%,
+          rgba(255, 255, 255, 0.25) 75%,
+          transparent 75%,
+          transparent);
+      background-size: 16px 16px;
+      animation: moveStripes 1s linear infinite;
+    }
+
+    @keyframes moveStripes {
+      0% {
+        background-position: 0 0;
+      }
+
+      100% {
+        background-position: 16px 0;
+      }
+    }
+
+    .dl-progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+
+    .dl-completed-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 3px;
+    }
+
+    .dl-size-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #4B5563;
+      background: #F3F4F6;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .dl-size-badge.error {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .dl-status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .dl-status-badge.success {
+      background: #D1FAE5;
+      color: #059669;
+    }
+
+    .dl-status-badge.danger {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .dl-action-col {
+      flex-shrink: 0;
+    }
+
+    .dl-icon-action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dl-icon-action-btn:active {
+      transform: scale(0.9);
+    }
+
+    .dl-icon-action-btn.pause-btn {
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .dl-icon-action-btn.play-btn {
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+
+    .dl-icon-action-btn.retry-btn {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    /* Empty State Container */
+    .dl-empty-box {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 36px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+      border: 1.5px dashed #E5E7EB;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+
+    .dl-empty-box .empty-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .dl-empty-box .empty-sub {
+      font-size: 12px;
+      font-weight: 500;
+      color: #9CA3AF;
+    }
+
+    /* Dock Notification Badge Dot */
+    .nav-dock-item .nav-icon-wrapper {
+      position: relative;
+    }
+
+    .dock-badge {
+      position: absolute;
+      top: -3px;
+      right: -8px;
+      background: var(--accent-primary, #EF4444);
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid white;
+      padding: 0 4px;
+      box-shadow: 0 2px 6px var(--accent-glow);
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: #111827;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap !important;
+      max-width: max-content;
+      width: max-content;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-notification span {
+      white-space: nowrap !important;
+      display: inline-block;
+    }
+
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* In-App Media Player Modal */
+    .media-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 250;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .media-modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .media-modal-card {
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .media-modal-backdrop.show .media-modal-card {
+      transform: scale(1);
+    }
+
+    .media-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .media-modal-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+    }
+
+    .media-modal-close {
+      background: #F3F4F6;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #4B5563;
+      transition: background 0.2s ease;
+    }
+
+    .media-modal-close:hover {
+      background: #E5E7EB;
+    }
+
+    .media-modal-body {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .media-modal-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .media-play-overlay {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 6px 24px rgba(239, 68, 68, 0.6);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .media-play-overlay:hover {
+      transform: scale(1.1);
+    }
+
+    /* Action Sheet Modal */
+    .action-sheet-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 260;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .action-sheet-backdrop.show,
+    .action-sheet-backdrop.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .action-sheet-card {
+      width: 100%;
+      background: #FFFFFF;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-sheet-backdrop.show .action-sheet-card,
+    .action-sheet-backdrop.active .action-sheet-card {
+      transform: translateY(0) !important;
+    }
+
+    .action-sheet-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #F3F4F6;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .action-sheet-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 10px;
+      border-radius: 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      text-align: left;
+      transition: background 0.2s ease;
+    }
+
+    .action-sheet-item:hover {
+      background: #F9FAFB;
+    }
+
+    .action-sheet-item.danger {
+      color: #DC2626;
+    }
+
+    /* Settings Page Styling */
+    .settings-group {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      border: 1px solid #F3F4F6;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .settings-group-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .settings-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .settings-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .settings-desc {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6B7280;
+    }
+
+    .settings-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #E5E7EB;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .settings-switch.active {
+      background: #EF4444;
+    }
+
+    .settings-switch-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Developer Profile Card & Support Buttons */
+    .dev-profile-card {
+      background: #FFFFFF;
+      border-radius: 22px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid #F3F4F6;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dev-header-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .dev-avatar-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #EF4444;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+      flex-shrink: 0;
+    }
+
+    .dev-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dev-info-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .dev-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .dev-role {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    .dev-tiktok-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #111827;
+      color: #FFFFFF;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      width: fit-content;
+      margin-top: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .dev-tiktok-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Big Prominent "Traktir Kopi" CTA Button */
+    .coffee-cta-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+      letter-spacing: 0.2px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .coffee-cta-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    /* History Modal & List Styles */
+    .history-modal-card {
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+    }
+
+    .history-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F3F4F6;
+      margin-bottom: 12px;
+    }
+
+    .history-modal-title-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .history-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .clear-history-btn {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .clear-history-btn:hover {
+      background: #FCA5A5;
+    }
+
+    .history-close-btn {
+      background: #F3F4F6;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #4B5563;
+      transition: background 0.2s ease;
+    }
+
+    .history-list-body {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 55vh;
+      padding-right: 2px;
+    }
+
+    .history-empty-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .history-empty-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #F3F4F6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9CA3AF;
+      margin-bottom: 4px;
+    }
+
+    .history-empty-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #374151;
+    }
+
+    .history-empty-desc {
+      font-size: 12px;
+      color: #9CA3AF;
+      max-width: 240px;
+      line-height: 1.4;
+    }
+
+    .history-item-card {
+      background: #F9FAFB;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .history-item-card:hover {
+      background: #F3F4F6;
+    }
+
+    .history-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .history-icon-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .history-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .history-url-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-meta-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+    }
+
+    .history-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .history-action-btn {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .history-action-btn:active {
+      transform: scale(0.92);
+    }
+
+    .history-action-btn.use-btn {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px var(--accent-glow);
+    }
+
+    .history-action-btn.del-btn {
+      background: #F3F4F6;
+      color: #6B7280;
+      padding: 6px 8px;
+    }
+
+    .phone-screen.dark-theme .history-modal-card {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .history-modal-header {
+      border-bottom-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .history-modal-title,
+    .phone-screen.dark-theme .history-empty-title {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .history-empty-icon {
+      background: #0F172A !important;
+      color: #64748B !important;
+    }
+
+    .phone-screen.dark-theme .history-item-card {
+      background: #0F172A !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .history-url-text {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .history-icon-badge {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .history-close-btn,
+    .phone-screen.dark-theme .history-action-btn.del-btn {
+      background: #334155 !important;
+      color: #CBD5E1 !important;
+    }
+
+    .phone-screen.dark-theme .clear-history-btn {
+      background: rgba(239, 68, 68, 0.2) !important;
+      color: #FCA5A5 !important;
+    }
+
+    /* Theme Option Pills */
+    .theme-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .theme-pill-btn {
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: #F9FAFB;
+      border: 1.5px solid #E5E7EB;
+      color: #4B5563;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .theme-pill-btn.active {
+      background: var(--accent-light-bg) !important;
+      border-color: var(--accent-primary) !important;
+      color: var(--accent-text) !important;
+      box-shadow: 0 2px 8px var(--accent-glow) !important;
+    }
+
+    /* ========================================================
+       DARK THEME OVERRIDES (.phone-screen.dark-theme)
+       ======================================================== */
+    .phone-screen.dark-theme .main-app-screen {
+      background: #0F172A !important;
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .section-title,
+    .phone-screen.dark-theme .social-label,
+    .phone-screen.dark-theme .dl-title,
+    .phone-screen.dark-theme .dev-name,
+    .phone-screen.dark-theme .settings-group-title,
+    .phone-screen.dark-theme .settings-label,
+    .phone-screen.dark-theme .dl-item-title {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .section-divider span {
+      background: #0F172A !important;
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .social-item {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .phone-screen.dark-theme .preview-placeholder-box {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .preview-card,
+    .phone-screen.dark-theme .dl-card,
+    .phone-screen.dark-theme .dev-profile-card,
+    .phone-screen.dark-theme .settings-group {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .phone-screen.dark-theme .preview-video-title {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .preview-creator-name {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .dropdown-trigger-btn {
+      background: #0F172A !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .trigger-label {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .option-item {
+      background: #0F172A !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .option-res {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .option-sub {
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%) !important;
+      border-color: transparent !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 14px var(--accent-glow) !important;
+    }
+
+    .phone-screen.dark-theme .theme-pill-btn {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .theme-pill-btn.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%) !important;
+      border: none !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 14px var(--accent-glow) !important;
+    }
+
+    .phone-screen.dark-theme .floating-nav-dock {
+      background: rgba(15, 23, 42, 0.88) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .phone-screen.dark-theme .nav-dock-item {
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .nav-dock-item.active {
+      color: var(--accent-primary) !important;
+    }
+
+    .phone-screen.dark-theme .nav-dock-item.active .nav-icon-wrapper svg {
+      stroke: var(--accent-primary) !important;
+    }
+
+    .phone-screen.dark-theme .settings-desc,
+    .phone-screen.dark-theme .dev-role,
+    .phone-screen.dark-theme .placeholder-text {
+      color: #9CA3AF !important;
+    }
+
+    /* Dark Theme Splash & Installation Screen */
+    .phone-screen.dark-theme .white-circle-bottom {
+      background: #0F172A !important;
+    }
+
+    .phone-screen.dark-theme .installation-container {
+      background: #0F172A !important;
+    }
+
+    .phone-screen.dark-theme .install-card {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .phone-screen.dark-theme .splash-title,
+    .phone-screen.dark-theme .install-app-title,
+    .phone-screen.dark-theme .install-progress-label {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .splash-subtitle,
+    .phone-screen.dark-theme .install-app-sub,
+    .phone-screen.dark-theme .install-log-text {
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .install-log-box {
+      background: #0F172A !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .install-alert-box {
+      background: rgba(127, 29, 29, 0.3) !important;
+      border-color: #7F1D1D !important;
+    }
+
+    /* ========================================================
+       DYNAMIC ACCENT COLOR SYSTEM
+       ======================================================== */
+    :root {
+      --accent-primary: #EF4444;
+      --accent-secondary: #DC2626;
+      --accent-dark: #991B1B;
+      --accent-glow: rgba(239, 68, 68, 0.35);
+      --accent-light-bg: #FEF2F2;
+      --accent-text: #DC2626;
+    }
+
+    .initial-red-screen,
+    .home-header-banner {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+      box-shadow: 0 10px 28px var(--accent-glow) !important;
+    }
+
+    .banner-search-btn,
+    .splash-arrow-btn,
+    .coffee-cta-btn,
+    .install-logo-box,
+    .circle-logo-point {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+      box-shadow: 0 8px 24px var(--accent-glow) !important;
+    }
+
+    .splash-dot.active,
+    .install-progress-fill {
+      background: var(--accent-primary) !important;
+    }
+
+    .install-percent-badge,
+    .nav-dock-item.active {
+      color: var(--accent-primary) !important;
+    }
+
+    .dl-filter-pill.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+      border-color: transparent !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 14px var(--accent-glow) !important;
+    }
+
+    .dl-filter-pill.active .pill-count {
+      background: rgba(255, 255, 255, 0.28) !important;
+      color: #FFFFFF !important;
+      font-weight: 800 !important;
+    }
+
+    .phone-screen.dark-theme .home-header-banner {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%) !important;
+      box-shadow: 0 10px 28px var(--accent-glow) !important;
+    }
+
+    .phone-screen.dark-theme .nav-dock-item.active {
+      color: var(--accent-primary) !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-bar {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill {
+      color: #9CA3AF !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill .pill-count {
+      background: #334155 !important;
+      color: #CBD5E1 !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%) !important;
+      color: #FFFFFF !important;
+    }
+
+    .phone-screen.dark-theme .dl-filter-pill.active .pill-count {
+      background: rgba(255, 255, 255, 0.28) !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Color Swatches Grid & Modal Popup Styles */
+    .color-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #111827;
+      display: block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .color-picker-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .color-picker-wheel-box {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 2px solid #E5E7EB;
+      flex-shrink: 0;
+    }
+
+    .color-picker-wheel-box input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 70px;
+      height: 70px;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .color-picker-preview {
+      width: 100%;
+      height: 100%;
+      display: block;
+      transition: background 0.2s ease;
+    }
+
+    .color-hex-text-input {
+      flex: 1;
+      height: 44px;
+      background: #F9FAFB;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 0 14px;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      outline: none;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .color-hex-text-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .color-swatches-grid {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .color-swatch-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .color-swatch-btn:active {
+      transform: scale(0.9);
+    }
+
+    .color-swatch-btn.active {
+      border-color: #FFFFFF;
+      box-shadow: 0 0 0 3px var(--accent-primary);
+      transform: scale(1.15);
+    }
+
+    .phone-screen.dark-theme .color-hex-text-input {
+      background: #0F172A !important;
+      border-color: #334155 !important;
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .color-modal-card {
+      background: #1E293B !important;
+      border-color: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .color-divider {
+      background: #334155 !important;
+    }
+
+    .phone-screen.dark-theme .color-section-label {
+      color: #F9FAFB !important;
+    }
+
+    .phone-screen.dark-theme .action-sheet-title {
+      color: #F9FAFB !important;
+    }
+
+    /* ========================================================
+       ANIMASI MASUK APLIKASI
+       1. Layar Hitam Pekat di awal (.app-boot-curtain di dalam .initial-red-screen)
+       2. Fade in dari Hitam ke Warna Aksen Background (bootCurtainFadeOut)
+       3. Bulatan membesar dari titik tengah ke posisinya (bootCircleExpandCenter)
+       4. Logo muncul di tengah beserta teks dan tombol (bootElementsPopIn)
+       ======================================================== */
+    .app-boot-curtain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .phone-screen.is-booting .app-boot-curtain {
+      animation: bootCurtainFadeOut 0.6s ease 0.3s forwards;
+    }
+
+    .phone-screen.is-booting .white-circle-bottom {
+      animation: bootCircleExpandCenter 0.8s cubic-bezier(0.34, 1.45, 0.64, 1) 0.55s both;
+    }
+
+    .phone-screen.is-booting .circle-logo-point {
+      animation: bootElementFadeIn 0.45s ease 0.85s both;
+    }
+
+    .phone-screen.is-booting .splash-text-wrapper {
+      animation: bootElementFadeIn 0.45s ease 1.25s both;
+    }
+
+    .phone-screen.is-booting .splash-arrow-btn {
+      animation: bootElementFadeIn 0.45s ease 1.50s both;
+    }
+
+    .phone-screen.is-booting .splash-dots-container {
+      animation: bootElementFadeIn 0.45s ease 1.60s both;
+    }
+
+    @keyframes bootCurtainFadeOut {
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    @keyframes bootColorFadeIn {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bootCircleExpandCenter {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-200px) scale(0.05);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1) rotate(0deg);
+      }
+    }
+
+    @keyframes bootElementFadeIn {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Mobile Frame Container -->
+  <div class="phone-frame">
+    <div class="phone-screen is-booting">
+      <!-- Mesh Pattern Background -->
+      <div class="mesh-pattern-overlay"></div>
+
+      <!-- Upper Spacer -->
+      <div class="upper-spacer"></div>
+
+      <!-- Toast Notification Bar -->
+      <div class="toast-notification" id="toastNotification">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="toastMsg">Notifikasi</span>
+      </div>
+
+      <!-- MAIN APP SCREEN (PLACED UNDERNEATH AT Z-INDEX 10) -->
+      <div class="main-app-screen" id="mainAppScreen">
+
+        <!-- UNIFIED SINGLE TOP RED BANNER HEADER (PERSISTENT ACROSS ALL TAB PAGES) -->
+        <div class="home-header-banner" id="appTopRedHeader">
+          <div class="banner-top-row">
+            <div class="banner-profile" style="display:flex; align-items:center;">
+              <button class="header-back-btn" id="headerBackBtn"
+                onclick="switchNavTab(document.querySelectorAll('.nav-dock-item')[0], 'home')">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <div class="banner-avatar-box" id="headerAvatarBox">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </div>
+              <div class="banner-text-box">
+                <h1 class="banner-app-title" id="headerTitle">SnapCat</h1>
+              </div>
+            </div>
+            <button class="banner-crown-btn" title="Riwayat Tautan" onclick="openHistoryModal()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <path d="M12 11v4l2 2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Banner Link Input Bar -->
+          <div class="banner-input-box" id="headerInputBox">
+            <svg class="link-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <input type="text" placeholder="Tempel tautan disini" id="linkInput" class="banner-url-input">
+            <button class="banner-search-btn" onclick="triggerDownload()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== HOME TAB PAGE ==================== -->
+        <div class="app-tab-page active" id="homeTabPage">
+
+          <!-- Social Shortcuts Section -->
+          <div class="social-section">
+            <div class="section-divider">
+              <span>Platform Yang Di Dukung</span>
+            </div>
+            <div class="social-grid">
+              <div class="social-item" onclick="openApp('tiktok')">
+                <div class="social-icon tiktok">
+                  <img src="tiktok.png" alt="TikTok">
+                </div>
+                <span class="social-label">TikTok</span>
+              </div>
+
+              <div class="social-item" onclick="openApp('youtube')">
+                <div class="social-icon youtube">
+                  <img src="yt.png" alt="YouTube">
+                </div>
+                <span class="social-label">YouTube</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pratinjau Hasil Section (Header Always Visible) -->
+          <div class="recent-section" id="previewSection">
+            <div class="recent-header">
+              <h3 class="section-title">Pratinjau Hasil</h3>
+            </div>
+
+            <!-- Subtle Empty State Placeholder (Before link is pasted) -->
+            <div class="preview-placeholder-box" id="previewPlaceholder">
+              <p class="placeholder-text">Tempelkan tautan video di atas untuk melihat pratinjau hasil</p>
+            </div>
+
+            <!-- Dynamic Preview Card (Hidden initially, animates in smoothly) -->
+            <div class="preview-card" id="previewCard" style="display: none;">
+              <!-- Platform Badge & Creator Header -->
+              <div class="preview-card-header">
+                <div class="platform-badge tiktok" id="previewPlatformBadge">
+                  <span id="previewPlatformIcon"><img src="tiktok.png" width="18" height="18"
+                      style="object-fit: contain;"></span>
+                  <span id="previewPlatformName">TikTok</span>
+                </div>
+                <span class="preview-creator-name" id="previewCreator">@reyaramani458</span>
+              </div>
+
+              <!-- Dynamic Thumbnail / Slide Carousel Container -->
+              <div id="previewMediaContainer">
+                <div class="preview-banner-box" id="previewBannerBox">
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80"
+                    alt="Video Thumbnail" class="preview-banner-img" id="previewBannerImg">
+                </div>
+              </div>
+
+              <!-- Clear Video Title Block -->
+              <div class="preview-title-block">
+                <h4 class="preview-video-title" id="previewVideoTitle">Aesthetic Sunset Cinematic Vlog #2026 - High
+                  Quality Short</h4>
+              </div>
+
+              <!-- Resolution & Format Dropdown Accordion Section -->
+              <div class="download-options-container">
+                <button class="dropdown-trigger-btn" id="dropdownTrigger" onclick="toggleDropdown()">
+                  <div class="trigger-label">
+                    <span id="dropdownLabel">Pilih Format & Resolusi</span>
+                  </div>
+                  <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                <!-- Dynamic Option List -->
+                <div class="options-list" id="optionsList">
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== HALAMAN UNDUHAN (DOWNLOADS TAB PAGE) ==================== -->
+        <div class="app-tab-page" id="downloadTabPage">
+
+          <!-- Filter Pills Bar (Semua, Selesai, Gagal) -->
+          <div class="dl-filter-bar">
+            <button class="dl-filter-pill active" onclick="filterDownloads('all', this)">Semua <span class="pill-count"
+                id="countAll">4</span></button>
+            <button class="dl-filter-pill" onclick="filterDownloads('completed', this)">Selesai <span class="pill-count"
+                id="countCompleted">3</span></button>
+            <button class="dl-filter-pill" onclick="filterDownloads('failed', this)">Gagal <span class="pill-count"
+                id="countFailed">1</span></button>
+          </div>
+
+          <!-- Download Items List Container -->
+          <div class="dl-list-container" id="dlListContainer">
+
+            <!-- Date Group 1: Hari Ini (29 Agu 2026) -->
+            <div class="dl-date-group" data-group="today">
+              <div class="dl-date-label">Hari Ini (29 Agu 2026)</div>
+
+              <!-- Item 1: In Progress / Downloading -->
+              <div class="dl-card downloading" data-status="downloading" data-id="item-1">
+                <div class="dl-thumb-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80"
+                    class="dl-thumb-img" alt="Thumbnail">
+                  <span class="dl-duration">03:45</span>
+                </div>
+                <div class="dl-info-block">
+                  <div class="dl-card-top">
+                    <h4 class="dl-item-title">Oh Mama! TETEMA (Song)</h4>
+                  </div>
+                  <p class="dl-item-sub">@RayvannyOfficial</p>
+                  <div class="dl-progress-box" id="progBox-item-1">
+                    <div class="dl-progress-bar-track">
+                      <div class="dl-progress-bar-fill animated-stripes" id="progFill-item-1" style="width: 58%;"></div>
+                    </div>
+                    <div class="dl-progress-meta">
+                      <span class="dl-bytes-text" id="progMeta-item-1">5.2 / 8.9 MB • 2.4 MB/s</span>
+                      <span class="dl-pct-text" id="progPct-item-1">58%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="dl-action-col">
+                  <button class="dl-icon-action-btn pause-btn" id="pauseBtn-item-1"
+                    onclick="togglePauseDownload('item-1')" title="Jeda / Lanjut Unduhan">
+                    <svg class="pause-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="4" width="4" height="16" rx="1" />
+                      <rect x="14" y="4" width="4" height="16" rx="1" />
+                    </svg>
+                    <svg class="play-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                      style="display:none;">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item 2: Completed Download 1 -->
+              <div class="dl-card completed" data-status="completed" data-id="item-2">
+                <div class="dl-thumb-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+                    class="dl-thumb-img" alt="Thumbnail">
+                  <span class="dl-duration">03:20</span>
+                </div>
+                <div class="dl-info-block">
+                  <div class="dl-card-top">
+                    <h4 class="dl-item-title">Justin Bieber - Baby ft. Ludacris</h4>
+                  </div>
+                  <p class="dl-item-sub">@JustinBieber</p>
+                  <div class="dl-completed-meta">
+                    <span class="dl-size-badge">192 MB</span>
+                    <span class="dl-status-badge success">✓ Selesai</span>
+                  </div>
+                </div>
+                <div class="dl-action-col">
+                  <div class="dl-icon-action-btn pause-btn" style="background:#D1FAE5;color:#059669;cursor:default;"
+                    title="Unduhan Selesai">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Completed Download 2 -->
+              <div class="dl-card completed" data-status="completed" data-id="item-3">
+                <div class="dl-thumb-wrapper">
+                  <img
+                    src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80"
+                    class="dl-thumb-img" alt="Thumbnail">
+                  <span class="dl-duration">03:55</span>
+                </div>
+                <div class="dl-info-block">
+                  <div class="dl-card-top">
+                    <h4 class="dl-item-title">Rema, Selena Gomez - Calm Down</h4>
+                  </div>
+                  <p class="dl-item-sub">@Reya_Selena</p>
+                  <div class="dl-completed-meta">
+                    <span class="dl-size-badge">87 MB</span>
+                    <span class="dl-status-badge success">✓ Selesai</span>
+                  </div>
+                </div>
+                <div class="dl-action-col">
+                  <div class="dl-icon-action-btn pause-btn" style="background:#D1FAE5;color:#059669;cursor:default;"
+                    title="Unduhan Selesai">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Date Group 2: 26 Agu 2026 -->
+            <div class="dl-date-group" data-group="past">
+              <div class="dl-date-label">26 Agu 2026</div>
+
+              <!-- Item 4: Failed Download -->
+              <div class="dl-card failed" data-status="failed" data-id="item-4">
+                <div class="dl-thumb-wrapper">
+                  <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&auto=format&fit=crop&q=80"
+                    class="dl-thumb-img" alt="Thumbnail">
+                  <span class="dl-duration">04:12</span>
+                </div>
+                <div class="dl-info-block">
+                  <div class="dl-card-top">
+                    <h4 class="dl-item-title">Oh Mama! TETEMA (Song)</h4>
+                  </div>
+                  <p class="dl-item-sub">@RayvannyOfficial</p>
+                  <div class="dl-completed-meta" id="statusBox-item-4">
+                    <span class="dl-size-badge error">5.2 / 8.9 MB</span>
+                    <span class="dl-status-badge danger">✕ Gagal</span>
+                  </div>
+                  <div class="dl-progress-box" id="progBox-item-4" style="display:none;">
+                    <div class="dl-progress-bar-track">
+                      <div class="dl-progress-bar-fill animated-stripes" id="progFill-item-4" style="width: 58%;"></div>
+                    </div>
+                    <div class="dl-progress-meta">
+                      <span class="dl-bytes-text" id="progMeta-item-4">5.2 / 8.9 MB • 2.4 MB/s</span>
+                      <span class="dl-pct-text" id="progPct-item-4">58%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="dl-action-col">
+                  <button class="dl-icon-action-btn retry-btn" id="retryBtn-item-4" onclick="retryDownload('item-4')"
+                    title="Coba Lagi Unduh">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State Box -->
+            <div class="dl-empty-box" id="dlEmptyState" style="display:none;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <p class="empty-title">Tidak ada unduhan</p>
+              <p class="empty-sub">Belum ada item dalam kategori ini.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ==================== PENGATURAN (SETTINGS TAB PAGE) ==================== -->
+        <div class="app-tab-page" id="settingsTabPage">
+
+          <!-- Developer Profile & Traktir Kopi (Big Prominent CTA) -->
+          <div class="dev-profile-card">
+            <div class="dev-header-row">
+              <div class="dev-avatar-box">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+                  class="dev-avatar-img" alt="Foto Profil Dev">
+              </div>
+              <div class="dev-info-box">
+                <span class="dev-name">GengZ Developer</span>
+                <button class="dev-tiktok-btn" onclick="openApp('tiktok');">
+                  <img src="tiktok.png" width="14" height="14" style="object-fit:contain;">
+                  <span>TikTok</span>
+                </button>
+              </div>
+            </div>
+
+            <button class="coffee-cta-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                <line x1="6" y1="1" x2="6" y2="4" />
+                <line x1="10" y1="1" x2="10" y2="4" />
+                <line x1="14" y1="1" x2="14" y2="4" />
+              </svg>
+              <span>TRAKTIR KOPI</span>
+            </button>
+          </div>
+
+          <!-- Group 1: Penyimpanan -->
+          <div class="settings-group">
+            <span class="settings-group-title">Penyimpanan</span>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Lokasi Penyimpanan</span>
+                <span class="settings-desc">/Storage/Emulated/0/SnapCat/Downloads</span>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Group 2: Tema & Warna -->
+          <div class="settings-group">
+            <span class="settings-group-title">Tema & Warna</span>
+            <div class="theme-options-grid">
+              <button class="theme-pill-btn active" onclick="setAppTheme('light', this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <span>Terang</span>
+              </button>
+              <button class="theme-pill-btn" onclick="setAppTheme('dark', this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                <span>Gelap</span>
+              </button>
+
+              <!-- 3rd Pill: 'Warna' Custom Color Modal Trigger -->
+              <button class="theme-pill-btn color-picker-pill" onclick="openColorModal()">
+                <span class="color-preview-dot" id="colorPreviewDot"
+                  style="width:12px; height:12px; border-radius:50%; background:var(--accent-primary, #EF4444); border:1.5px solid rgba(255,255,255,0.5); box-shadow:0 0 4px rgba(0,0,0,0.3); display:inline-block; flex-shrink:0;"></span>
+                <span>Warna</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Group 3: Sistem -->
+          <div class="settings-group">
+            <span class="settings-group-title">Sistem</span>
+            <div class="settings-item" style="cursor:pointer;" onclick="checkAppUpdates()">
+              <div class="settings-info">
+                <span class="settings-label">Periksa Pembaruan</span>
+                <span class="settings-desc">Cek pembaruan aplikasi ke versi terbaru</span>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+            <div class="settings-item">
+              <div class="settings-info">
+                <span class="settings-label">Versi aplikasi</span>
+              </div>
+              <span class="dl-size-badge" style="background:var(--accent-light-bg);color:var(--accent-text);">v2.4.0</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- In-App Media Player Modal -->
+      <div class="media-modal-backdrop" id="mediaPlayerModal">
+        <div class="media-modal-card">
+          <div class="media-modal-header">
+            <span class="media-modal-title" id="mediaModalTitle">Putar Media</span>
+            <button class="media-modal-close" onclick="closeMediaModal()">✕</button>
+          </div>
+          <div class="media-modal-body">
+            <img src="" class="media-modal-img" id="mediaModalImg" alt="Media Preview">
+            <div class="media-play-overlay">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Sheet Modal for Item Options -->
+      <div class="action-sheet-backdrop" id="actionSheetModal">
+        <div class="action-sheet-card">
+          <span class="action-sheet-title" id="actionSheetTitle">Opsi Unduhan</span>
+          <button class="action-sheet-item" onclick="handleOptionAction('open')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Buka Berkas</span>
+          </button>
+          <button class="action-sheet-item" onclick="handleOptionAction('share')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+            <span>Bagikan Berkas</span>
+          </button>
+          <button class="action-sheet-item" onclick="handleOptionAction('copy')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            <span>Salin Tautan Video</span>
+          </button>
+          <button class="action-sheet-item danger" onclick="handleOptionAction('delete')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+              <path d="M3 6h18" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            <span>Hapus dari Daftar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Sheet Modal for Link History -->
+      <div class="action-sheet-backdrop" id="historyModal">
+        <div class="action-sheet-card history-modal-card">
+          <div class="history-modal-header">
+            <div class="history-modal-title-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <path d="M12 11v4l2 2"></path>
+              </svg>
+              <span class="history-modal-title">Riwayat Tautan</span>
+            </div>
+            <div class="history-header-actions">
+              <button class="clear-history-btn" onclick="clearAllHistory()">Hapus Semua</button>
+              <button class="history-close-btn" onclick="closeHistoryModal()">✕</button>
+            </div>
+          </div>
+          <div class="history-list-body" id="historyListBody">
+            <!-- Dynamic History List Items -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Color Palette Modal Popup -->
+      <div class="action-sheet-backdrop" id="colorPickerModal" onclick="if(event.target === this) closeColorModal()">
+        <div class="action-sheet-card color-modal-card" style="padding: 22px 20px 24px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:16px;">
+            <span class="action-sheet-title" style="margin:0; font-size:16px; font-weight:800;">Pilih Warna Aksen</span>
+            <button onclick="closeColorModal()"
+              style="background:none; border:none; color:#9CA3AF; font-size:20px; font-weight:700; cursor:pointer; padding:0 4px;">✕</button>
+          </div>
+
+          <!-- Section 1: Custom Color Input (At the top) -->
+          <div class="color-slider-section" style="width:100%;">
+            <span class="color-section-label">Warna Kustom</span>
+            <div class="color-picker-input-wrapper">
+              <label class="color-picker-wheel-box" title="Pilih Warna Kustom">
+                <input type="color" id="modalColorInput" value="#EF4444" oninput="onModalColorChange(this.value)"
+                  onchange="onModalColorChange(this.value)">
+                <span class="color-picker-preview" id="modalColorPreview"
+                  style="background:var(--accent-primary, #EF4444);"></span>
+              </label>
+              <input type="text" id="modalColorHexText" value="#EF4444" class="color-hex-text-input" placeholder="#HEX"
+                onchange="onModalHexInput(this.value)">
+            </div>
+          </div>
+
+          <div style="height:1px; background:#E5E7EB; width:100%; margin:16px 0;" class="color-divider"></div>
+
+          <!-- Section 2: Preset Color Swatches Ready To Pick (At the bottom) -->
+          <div class="color-presets-section" style="width:100%;">
+            <span class="color-section-label">Rekomendasi Warna</span>
+            <div class="color-swatches-grid">
+              <button class="color-swatch-btn" style="background:#EF4444;" onclick="selectPresetColor('#EF4444')"
+                title="Merah SnapCat"></button>
+              <button class="color-swatch-btn" style="background:#3B82F6;" onclick="selectPresetColor('#3B82F6')"
+                title="Biru Elektrik"></button>
+              <button class="color-swatch-btn" style="background:#8B5CF6;" onclick="selectPresetColor('#8B5CF6')"
+                title="Ungu Neon"></button>
+              <button class="color-swatch-btn" style="background:#10B981;" onclick="selectPresetColor('#10B981')"
+                title="Hijau Emerald"></button>
+              <button class="color-swatch-btn" style="background:#F97316;" onclick="selectPresetColor('#F97316')"
+                title="Oranye Ember"></button>
+              <button class="color-swatch-btn" style="background:#EC4899;" onclick="selectPresetColor('#EC4899')"
+                title="Pink Magenta"></button>
+              <button class="color-swatch-btn" style="background:#F59E0B;" onclick="selectPresetColor('#F59E0B')"
+                title="Kuning Amber"></button>
+              <button class="color-swatch-btn" style="background:#06B6D4;" onclick="selectPresetColor('#06B6D4')"
+                title="Cyan Aqua"></button>
+              <button class="color-swatch-btn" style="background:#0F172A;" onclick="selectPresetColor('#0F172A')"
+                title="Dark Slate"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Glassmorphism Bottom Navigation Dock (Fixed Floating, No Scroll Jitter) -->
+      <div class="floating-nav-dock">
+        <button class="nav-dock-item active" onclick="switchNavTab(this, 'home')">
+          <div class="nav-icon-wrapper">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="currentColor">
+              <path
+                d="M 23.951172 4 A 1.50015 1.50015 0 0 0 23.072266 4.3222656 L 8.859375 15.519531 C 7.0554772 16.941163 6 19.113506 6 21.410156 L 6 40.5 C 6 41.863594 7.1364058 43 8.5 43 L 18.5 43 C 19.863594 43 21 41.863594 21 40.5 L 21 30.5 C 21 30.204955 21.204955 30 21.5 30 L 26.5 30 C 26.795045 30 27 30.204955 27 30.5 L 27 40.5 C 27 41.863594 28.136406 43 29.5 43 L 39.5 43 C 40.863594 43 42 41.863594 42 40.5 L 42 21.410156 C 42 19.113506 40.944523 16.941163 39.140625 15.519531 L 24.927734 4.3222656 A 1.50015 1.50015 0 0 0 23.951172 4 z M 24 7.4101562 L 37.285156 17.876953 C 38.369258 18.731322 39 20.030807 39 21.410156 L 39 40 L 30 40 L 30 30.5 C 30 28.585045 28.414955 27 26.5 27 L 21.5 27 C 19.585045 27 18 28.585045 18 30.5 L 18 40 L 9 40 L 9 21.410156 C 9 20.030807 9.6307412 18.731322 10.714844 17.876953 L 24 7.4101562 z" />
+            </svg>
+          </div>
+          <span class="nav-dock-label">Home</span>
+        </button>
+
+        <button class="nav-dock-item" onclick="switchNavTab(this, 'download')">
+          <div class="nav-icon-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </div>
+          <span class="nav-dock-label">Unduhan</span>
+        </button>
+
+        <button class="nav-dock-item" onclick="switchNavTab(this, 'settings')">
+          <div class="nav-icon-wrapper">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="currentColor">
+              <path
+                d="M 24 4 C 22.423103 4 20.902664 4.1994284 19.451172 4.5371094 A 1.50015 1.50015 0 0 0 18.300781 5.8359375 L 17.982422 8.7382812 C 17.878304 9.6893592 17.328913 10.530853 16.5 11.009766 C 15.672739 11.487724 14.66862 11.540667 13.792969 11.15625 L 13.791016 11.15625 L 11.125 9.9824219 A 1.50015 1.50015 0 0 0 9.4257812 10.330078 C 7.3532865 12.539588 5.7626807 15.215064 4.859375 18.201172 A 1.50015 1.50015 0 0 0 5.4082031 19.845703 L 7.7734375 21.580078 C 8.5457929 22.147918 9 23.042801 9 24 C 9 24.95771 8.5458041 25.853342 7.7734375 26.419922 L 5.4082031 28.152344 A 1.50015 1.50015 0 0 0 4.859375 29.796875 C 5.7625845 32.782665 7.3519262 35.460112 9.4257812 37.669922 A 1.50015 1.50015 0 0 0 11.125 38.015625 L 13.791016 36.841797 C 14.667094 36.456509 15.672169 36.511947 16.5 36.990234 C 17.328913 37.469147 17.878304 38.310641 17.982422 39.261719 L 18.300781 42.164062 A 1.50015 1.50015 0 0 0 19.449219 43.460938 C 20.901371 43.799844 22.423103 44 24 44 C 25.576897 44 27.097336 43.800572 28.548828 43.462891 A 1.50015 1.50015 0 0 0 29.699219 42.164062 L 30.017578 39.261719 C 30.121696 38.310641 30.671087 37.469147 31.5 36.990234 C 32.327261 36.512276 33.33138 36.45738 34.207031 36.841797 L 36.875 38.015625 A 1.50015 1.50015 0 0 0 38.574219 37.669922 C 40.646713 35.460412 42.237319 32.782983 43.140625 29.796875 A 1.50015 1.50015 0 0 0 42.591797 28.152344 L 40.226562 26.419922 C 39.454197 25.853342 39 24.95771 39 24 C 39 23.04229 39.454197 22.146658 40.226562 21.580078 L 42.591797 19.847656 A 1.50015 1.50015 0 0 0 43.140625 18.203125 C 42.237319 15.217017 40.646713 12.539588 38.574219 10.330078 A 1.50015 1.50015 0 0 0 36.875 9.984375 L 34.207031 11.158203 C 33.33138 11.54262 32.327261 11.487724 31.5 11.009766 C 30.671087 10.530853 30.121696 9.6893592 30.017578 8.7382812 L 29.699219 5.8359375 A 1.50015 1.50015 0 0 0 28.550781 4.5390625 C 27.098629 4.2001555 25.576897 4 24 4 z M 24 7 C 24.974302 7 25.90992 7.1748796 26.847656 7.3398438 L 27.035156 9.0644531 C 27.243038 10.963375 28.346913 12.652335 30 13.607422 C 31.654169 14.563134 33.668094 14.673009 35.416016 13.904297 L 37.001953 13.207031 C 38.219788 14.669402 39.183985 16.321182 39.857422 18.130859 L 38.451172 19.162109 C 36.911538 20.291529 36 22.08971 36 24 C 36 25.91029 36.911538 27.708471 38.451172 28.837891 L 39.857422 29.869141 C 39.183985 31.678818 38.219788 33.330598 37.001953 34.792969 L 35.416016 34.095703 C 33.668094 33.326991 31.654169 33.436866 30 34.392578 C 28.346913 35.347665 27.243038 37.036625 27.035156 38.935547 L 26.847656 40.660156 C 25.910002 40.82466 24.973817 41 24 41 C 23.025698 41 22.09008 40.82512 21.152344 40.660156 L 20.964844 38.935547 C 20.756962 37.036625 19.653087 35.347665 18 34.392578 C 16.345831 33.436866 14.331906 33.326991 12.583984 34.095703 L 10.998047 34.792969 C 9.7799772 33.330806 8.8159425 31.678964 8.1425781 29.869141 L 9.5488281 28.837891 C 11.088462 27.708471 12 25.91029 12 24 C 12 22.08971 11.087719 20.290363 9.5488281 19.160156 L 8.1425781 18.128906 C 8.8163325 16.318532 9.7814501 14.667839 11 13.205078 L 12.583984 13.902344 C 14.331906 14.671056 16.345831 14.563134 18 13.607422 C 19.653087 12.652335 20.756962 10.963375 20.964844 9.0644531 L 21.152344 7.3398438 C 22.089998 7.1753403 23.026183 7 24 7 z M 24 16 C 19.599487 16 16 19.59949 16 24 C 16 28.40051 19.599487 32 24 32 C 28.400513 32 32 28.40051 32 24 C 32 19.59949 28.400513 16 24 16 z M 24 19 C 26.779194 19 29 21.220808 29 24 C 29 26.779192 26.779194 29 24 29 C 21.220806 29 19 26.779192 19 24 C 19 21.220808 21.220806 19 24 19 z" />
+            </svg>
+          </div>
+          <span class="nav-dock-label">Pengaturan</span>
+        </button>
+      </div>
+
+
+
+      <!-- INITIAL RED SCREEN WITH WHITE CIRCLE ONBOARDING -->
+      <div class="initial-red-screen" id="initialRedScreen">
+        <!-- Overlay Hitam Boot -->
+        <div class="app-boot-curtain" id="appBootCurtain"></div>
+
+        <div class="white-circle-bottom" id="whiteCircleBottom">
+          <!-- 4 Cardinal Logo Points Around The Rotating Wheel -->
+          <div class="circle-logo-point point-top">
+            <div class="inner-icon-counter">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+            </div>
+          </div>
+          <div class="circle-logo-point point-right">
+            <div class="inner-icon-counter">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              </svg>
+            </div>
+          </div>
+          <div class="circle-logo-point point-bottom">
+            <div class="inner-icon-counter">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </div>
+          </div>
+          <div class="circle-logo-point point-left">
+            <div class="inner-icon-counter">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="white">
+                <path d="M4 6L12 12L4 18V6Z" />
+                <path d="M20 6L12 12L20 18V6Z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Wrapper -->
+        <div class="splash-text-wrapper" id="splashTextWrapper">
+          <div class="app-tag-pill">
+            <span id="splashTag">TUTORIAL</span>
+          </div>
+          <h2 class="splash-title" id="splashTitle">Salin Tautan</h2>
+          <p class="splash-subtitle" id="splashSubtitle">Temukan video di platform favorit anda, klik bagikan lalu klik
+            salin tautan</p>
+        </div>
+
+        <!-- Action Button -->
+        <button class="splash-arrow-btn" id="splashArrowBtn" onclick="nextSplashStep()">
+          <div class="btn-icon-state">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+          <div class="btn-text-state">
+            <span id="splashBtnText">Masuk Sekarang</span>
+          </div>
+        </button>
+
+        <!-- Carousel Dots -->
+        <div class="splash-dots-container" id="splashDotsContainer">
+          <span class="splash-dot active" onclick="goToSplashStep(0)"></span>
+          <span class="splash-dot" onclick="goToSplashStep(1)"></span>
+          <span class="splash-dot" onclick="goToSplashStep(2)"></span>
+          <span class="splash-dot" onclick="goToSplashStep(3)"></span>
+        </div>
+
+        <!-- LAYAR INSTALASI (MUNCUL SETELAH LINGKARAN MEMENUHI LAYAR) -->
+        <div class="installation-container" id="installationContainer">
+          <div class="install-card">
+
+            <!-- Progress Header & Bar -->
+            <div class="install-progress-header">
+              <span class="install-progress-label">Menginstall alat yang dibutuhkan</span>
+              <span class="install-percent-badge" id="installPercent">0%</span>
+            </div>
+
+            <div class="install-progress-track">
+              <div class="install-progress-fill" id="installProgressFill"></div>
+            </div>
+
+            <!-- Log Box -->
+            <div class="install-log-box">
+              <div class="install-log-spinner" id="installLogSpinner"></div>
+              <span class="install-log-text" id="installLogText">Memeriksa spesifikasi sistem dan kecocokan sistem
+                operasi</span>
+            </div>
+
+            <!-- Warning Alert Box -->
+            <div class="install-warning-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                </path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <p class="install-warning-text">
+                <strong>Peringatan:</strong> Proses instalasi hanya sekali saja.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="home-indicator"></div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================
+       CIRCULAR SPLASH ONBOARDING LOGIC
+       ======================================================== */
+    const splashSlidesData = [
+      {
+        tag: "TUTORIAL",
+        title: "Salin Tautan",
+        subtitle: "Temukan video di platform favorit anda, klik bagikan lalu klik salin tautan"
+      },
+      {
+        tag: "TUTORIAL",
+        title: "Tempel Tautan",
+        subtitle: "Tempel tautan yang anda salin ke input tautan SnapCat"
+      },
+      {
+        tag: "TUTORIAL",
+        title: "Cari & Unduh",
+        subtitle: "Klik tombol cari, lihat pratinjau, pilih resolusi dan unduh"
+      },
+      {
+        tag: "SNAPCAT",
+        title: "Unduh apa saja",
+        subtitle: "Salin, tempel, cari, pilih resolusi dan simpan, that simple bro"
+      }
+    ];
+
+    let splashStepIndex = 0;
+
+    function renderSplashStep(index, isInitial = false) {
+      splashStepIndex = index;
+      const data = splashSlidesData[index];
+      const whiteCircleBottom = document.getElementById('whiteCircleBottom');
+      const splashTextWrapper = document.getElementById('splashTextWrapper');
+      const splashTag = document.getElementById('splashTag');
+      const splashTitle = document.getElementById('splashTitle');
+      const splashSubtitle = document.getElementById('splashSubtitle');
+      const splashArrowBtn = document.getElementById('splashArrowBtn');
+      const dots = document.querySelectorAll('#splashDotsContainer .splash-dot');
+      const counterIcons = document.querySelectorAll('.inner-icon-counter');
+
+      // Rotate circular wheel by -90deg per step
+      const circleAngle = -90 * index;
+      if (whiteCircleBottom) {
+        whiteCircleBottom.style.transform = `translateX(-50%) rotate(${circleAngle}deg)`;
+      }
+
+      // Counter-rotate inner icons so they always stay upright facing the user
+      counterIcons.forEach(icon => {
+        icon.style.transform = `rotate(${-circleAngle}deg)`;
+      });
+
+      if (splashTextWrapper) {
+        if (isInitial) {
+          // Inisialisasi awal boot: Pasang teks langsung tanpa efek kedip / timeout
+          if (splashTag) splashTag.innerText = data.tag;
+          if (splashTitle) splashTitle.innerText = data.title;
+          if (splashSubtitle) splashSubtitle.innerText = data.subtitle;
+        } else {
+          // Transisi antar slide via tombol: gunakan fade-out -> fade-in
+          splashTextWrapper.classList.remove('fade-in');
+          splashTextWrapper.classList.add('fade-out');
+
+          setTimeout(() => {
+            if (splashTag) splashTag.innerText = data.tag;
+            if (splashTitle) splashTitle.innerText = data.title;
+            if (splashSubtitle) splashSubtitle.innerText = data.subtitle;
+
+            splashTextWrapper.classList.remove('fade-out');
+            splashTextWrapper.classList.add('fade-in');
+          }, 150);
+        }
+      }
+
+      if (splashArrowBtn) {
+        const btnTextElem = document.getElementById('splashBtnText');
+        if (index === 3) {
+          splashArrowBtn.classList.add('is-final-step');
+          if (btnTextElem) {
+            if (isUserOnboarded()) {
+              btnTextElem.innerText = 'Masuk Sekarang';
+            } else {
+              btnTextElem.innerText = 'Mulai Sekarang';
+            }
+          }
+        } else {
+          splashArrowBtn.classList.remove('is-final-step');
+        }
+      }
+
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === index);
+      });
+    }
+
+    function nextSplashStep() {
+      if (splashStepIndex < 3) {
+        renderSplashStep(splashStepIndex + 1);
+      } else {
+        finishSplashOnboarding();
+      }
+    }
+
+    function goToSplashStep(index) {
+      renderSplashStep(index);
+    }
+
+    function isUserOnboarded() {
+      return localStorage.getItem('snapcat_has_onboarded') === 'true';
+    }
+
+    function initOnboardingFlow() {
+      const onboarded = isUserOnboarded();
+      const dotsContainer = document.getElementById('splashDotsContainer');
+
+      if (onboarded) {
+        // USER SUDAH PERNAH MASUK:
+        // 1. Sembunyikan titik-titik indikator (splash-dots)
+        if (dotsContainer) dotsContainer.style.display = 'none';
+        // 2. Tampilkan langsung di tahap akhir (Index 3: SNAPCAT - Unduh apa saja) tanpa kedip
+        renderSplashStep(3, true);
+      } else {
+        // PERTAMA KALI MASUK:
+        // 1. Tampilkan titik-titik indikator
+        if (dotsContainer) dotsContainer.style.display = 'flex';
+        // 2. Tampilkan dari tahap pertama (Index 0: TUTORIAL - Salin Tautan) tanpa kedip
+        renderSplashStep(0, true);
+      }
+    }
+
+    function finishSplashOnboarding() {
+      const initialRedScreen = document.getElementById('initialRedScreen');
+      const whiteCircleBottom = document.getElementById('whiteCircleBottom');
+      const installationContainer = document.getElementById('installationContainer');
+      const circleAngle = -90 * splashStepIndex;
+
+      const wasAlreadyOnboarded = isUserOnboarded();
+
+      // Simpan flag di localStorage bahwa user sudah pernah masuk
+      localStorage.setItem('snapcat_has_onboarded', 'true');
+
+      if (whiteCircleBottom) {
+        whiteCircleBottom.style.transition = 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+        whiteCircleBottom.style.transform = `translateX(-50%) rotate(${circleAngle}deg) scale(5.5)`;
+      }
+
+      if (initialRedScreen) {
+        initialRedScreen.classList.add('exiting');
+
+        if (wasAlreadyOnboarded) {
+          // USER SUDAH PERNAH MASUK: SKIP PROGRES INSTALASI, LANGSUNG MASUK HALAMAN UTAMA!
+          setTimeout(() => {
+            if (initialRedScreen) {
+              initialRedScreen.style.display = 'none';
+            }
+            const mainAppScreen = document.getElementById('mainAppScreen');
+            const floatingNavDock = document.querySelector('.floating-nav-dock');
+
+            if (mainAppScreen) {
+              mainAppScreen.classList.add('animate-entrance');
+            }
+            if (floatingNavDock) {
+              floatingNavDock.classList.add('animate-entrance');
+            }
+
+            // Clean up entrance animation class after 1.8s
+            // so animations DON'T re-trigger when switching tabs back to home!
+            setTimeout(() => {
+              if (mainAppScreen) mainAppScreen.classList.remove('animate-entrance');
+              if (floatingNavDock) floatingNavDock.classList.remove('animate-entrance');
+            }, 1800);
+          }, 650);
+        } else {
+          // PERTAMA KALI MASUK: TAMPILKAN PROGRES INSTALASI
+          setTimeout(() => {
+            if (installationContainer) {
+              installationContainer.classList.add('active');
+              startInstallationProgress();
+            }
+          }, 650);
+        }
+      }
+    }
+
+    // Jalankan inisialisasi onboarding saat script dimuat
+    initOnboardingFlow();
+
+    function startInstallationProgress() {
+      const percentBadge = document.getElementById('installPercent');
+      const progressFill = document.getElementById('installProgressFill');
+      const logText = document.getElementById('installLogText');
+      const initialRedScreen = document.getElementById('initialRedScreen');
+
+      let currentPercent = 0;
+
+      const logMessages = [
+        { pct: 0, text: "Memeriksa spesifikasi sistem dan kecocokan sistem operasi" },
+        { pct: 10, text: "Memperbarui indeks paket repositori sistem" },
+        { pct: 20, text: "Mengunduh dan menginstal dependensi dasar (curl, wget, dan git)" },
+        { pct: 30, text: "Membuat dan mengaktifkan lingkungan virtual Python (venv)" },
+        { pct: 40, text: "Memperbarui komponen pip dan setuptools ke versi terbaru" },
+        { pct: 50, text: "Mengunduh dan menginstal library utama yt-dlp via pip" },
+        { pct: 60, text: "Mengunduh pustaka biner statis FFmpeg dan FFprobe" },
+        { pct: 70, text: "Mengekstrak file FFmpeg dan mengatur PATH environment variable" },
+        { pct: 85, text: "Membuat direktori unduhan default dan file konfigurasi aplikasi" },
+        { pct: 98, text: "Menjalankan pengujian integrasi untuk memastikan yt-dlp dan FFmpeg terhubung dengan benar" }
+      ];
+
+      const interval = setInterval(() => {
+        currentPercent += 1;
+
+        if (percentBadge) percentBadge.innerText = currentPercent + '%';
+        if (progressFill) progressFill.style.width = currentPercent + '%';
+
+        // Check if there is a log message update
+        const matchingLog = logMessages.find(item => item.pct === currentPercent);
+        if (matchingLog && logText) {
+          logText.style.opacity = '0';
+          setTimeout(() => {
+            logText.innerText = matchingLog.text;
+            logText.style.opacity = '1';
+          }, 150);
+        }
+
+        if (currentPercent >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            const installCard = document.querySelector('.install-card');
+
+            // 1. Fade out installation card, keeping white background clean (Slow-mo 0.8s)
+            if (installCard) {
+              installCard.style.transition = 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+              installCard.style.opacity = '0';
+              installCard.style.transform = 'scale(0.9) translateY(25px)';
+            }
+
+            // 2. Reveal main app screen & trigger staggered entrance animations
+            setTimeout(() => {
+              if (initialRedScreen) {
+                initialRedScreen.style.display = 'none';
+              }
+              const mainAppScreen = document.getElementById('mainAppScreen');
+              const floatingNavDock = document.querySelector('.floating-nav-dock');
+
+              if (mainAppScreen) {
+                mainAppScreen.classList.add('animate-entrance');
+              }
+              if (floatingNavDock) {
+                floatingNavDock.classList.add('animate-entrance');
+              }
+
+              // Clean up entrance animation class after initial load (2.2s)
+              // so red banner animation NEVER re-triggers when returning to home!
+              setTimeout(() => {
+                if (mainAppScreen) mainAppScreen.classList.remove('animate-entrance');
+                if (floatingNavDock) floatingNavDock.classList.remove('animate-entrance');
+              }, 1800);
+            }, 800);
+
+          }, 500);
+        }
+      }, 35);
+    }
+
+
+    function toggleDropdown() {
+      const trigger = document.getElementById('dropdownTrigger');
+      const list = document.getElementById('optionsList');
+      if (trigger && list) {
+        trigger.classList.toggle('active');
+        list.classList.toggle('active');
+      }
+    }
+
+    function downloadFile(formatName) {
+      alert(`Memulai pengunduhan untuk format: ${formatName}`);
+    }
+
+    function setAppTheme(theme, btn) {
+      const themeBtns = document.querySelectorAll('.theme-pill-btn');
+      themeBtns.forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      // Save preference to localStorage
+      try {
+        localStorage.setItem('snapcat_saved_theme', theme);
+      } catch (e) { }
+
+      const phoneScreen = document.querySelector('.phone-screen');
+      if (!phoneScreen) return;
+
+      if (theme === 'dark') {
+        phoneScreen.classList.add('dark-theme');
+        document.body.classList.add('dark-theme');
+      } else if (theme === 'light') {
+        phoneScreen.classList.remove('dark-theme');
+        document.body.classList.remove('dark-theme');
+      } else {
+        // System preference default
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          phoneScreen.classList.add('dark-theme');
+          document.body.classList.add('dark-theme');
+        } else {
+          phoneScreen.classList.remove('dark-theme');
+          document.body.classList.remove('dark-theme');
+        }
+      }
+    }
+
+    function setAppAccent(hexColor, btnElement) {
+      if (!hexColor) return;
+
+      // Update active swatch UI state
+      const swatches = document.querySelectorAll('.color-swatch-btn');
+      swatches.forEach(s => s.classList.remove('active'));
+      if (btnElement) {
+        btnElement.classList.add('active');
+      }
+
+      const colorPicker = document.getElementById('accentColorPicker');
+      if (colorPicker) {
+        colorPicker.value = hexColor;
+      }
+
+      const dot = document.getElementById('colorPreviewDot');
+      if (dot) {
+        dot.style.background = hexColor;
+      }
+
+      function darkenColor(hex, percent) {
+        let num = parseInt(hex.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) - amt,
+          G = (num >> 8 & 0x00FF) - amt,
+          B = (num & 0x0000FF) - amt;
+        return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+      }
+
+      function hexToRgba(hex, alpha) {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(x => x + x).join('');
+        const num = parseInt(c, 16);
+        return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+      }
+
+      const secondaryColor = darkenColor(hexColor, 12);
+      const darkColor = darkenColor(hexColor, 28);
+      const glowColor = hexToRgba(hexColor, 0.4);
+      const lightBgColor = hexToRgba(hexColor, 0.12);
+
+      const root = document.documentElement;
+      root.style.setProperty('--accent-primary', hexColor);
+      root.style.setProperty('--accent-secondary', secondaryColor);
+      root.style.setProperty('--accent-dark', darkColor);
+      root.style.setProperty('--accent-glow', glowColor);
+      root.style.setProperty('--accent-light-bg', lightBgColor);
+      root.style.setProperty('--accent-text', hexColor);
+
+      // Save custom accent color to localStorage
+      try {
+        localStorage.setItem('snapcat_accent_color', hexColor);
+      } catch (e) { }
+    }
+
+    /* Color Picker Modal Controls */
+    function openColorModal() {
+      const modal = document.getElementById('colorPickerModal');
+      if (modal) {
+        modal.classList.add('show', 'active');
+        const currentAccent = localStorage.getItem('snapcat_accent_color') || '#EF4444';
+        const colorInput = document.getElementById('modalColorInput');
+        const hexText = document.getElementById('modalColorHexText');
+        const preview = document.getElementById('modalColorPreview');
+        if (colorInput) colorInput.value = currentAccent;
+        if (hexText) hexText.value = currentAccent.toUpperCase();
+        if (preview) preview.style.background = currentAccent;
+
+        // Highlight matching swatch
+        const swatches = document.querySelectorAll('#colorPickerModal .color-swatch-btn');
+        swatches.forEach(s => {
+          s.classList.remove('active');
+          if (s.getAttribute('onclick') && s.getAttribute('onclick').includes(currentAccent)) {
+            s.classList.add('active');
+          }
+        });
+      }
+    }
+
+    function closeColorModal() {
+      const modal = document.getElementById('colorPickerModal');
+      if (modal) modal.classList.remove('show', 'active');
+    }
+
+    function onModalColorChange(hexColor) {
+      const hexText = document.getElementById('modalColorHexText');
+      const preview = document.getElementById('modalColorPreview');
+      if (hexText) hexText.value = hexColor.toUpperCase();
+      if (preview) preview.style.background = hexColor;
+
+      // Update swatch active state
+      const swatches = document.querySelectorAll('#colorPickerModal .color-swatch-btn');
+      swatches.forEach(s => {
+        s.classList.remove('active');
+        if (s.getAttribute('onclick') && s.getAttribute('onclick').includes(hexColor)) {
+          s.classList.add('active');
+        }
+      });
+
+      setAppAccent(hexColor, null);
+    }
+
+    function onModalHexInput(value) {
+      if (!value) return;
+      if (!value.startsWith('#')) value = '#' + value;
+      if (/^#([0-9A-F]{3}){1,2}$/i.test(value)) {
+        onModalColorChange(value);
+        const colorInput = document.getElementById('modalColorInput');
+        if (colorInput) colorInput.value = value;
+      }
+    }
+
+    function selectPresetColor(hexColor) {
+      onModalColorChange(hexColor);
+      const colorInput = document.getElementById('modalColorInput');
+      if (colorInput) colorInput.value = hexColor;
+      setTimeout(closeColorModal, 280);
+    }
+
+    // Auto load saved theme & accent color preference on boot
+    (function initSavedTheme() {
+      try {
+        const savedTheme = localStorage.getItem('snapcat_saved_theme') || 'light';
+        const targetBtn = document.querySelector(`.theme-pill-btn[onclick*="${savedTheme}"]`);
+        setAppTheme(savedTheme, targetBtn);
+
+        const savedAccent = localStorage.getItem('snapcat_accent_color') || '#EF4444';
+        const matchingSwatch = document.querySelector(`.color-swatch-btn[onclick*="${savedAccent}"]`);
+        setAppAccent(savedAccent, matchingSwatch);
+      } catch (e) { }
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedTheme = localStorage.getItem('snapcat_saved_theme') || 'light';
+        const targetBtn = document.querySelector(`.theme-pill-btn[onclick*="${savedTheme}"]`);
+        setAppTheme(savedTheme, targetBtn);
+
+        const savedAccent = localStorage.getItem('snapcat_accent_color') || '#EF4444';
+        const matchingSwatch = document.querySelector(`.color-swatch-btn[onclick*="${savedAccent}"]`);
+        setAppAccent(savedAccent, matchingSwatch);
+      } catch (e) { }
+    });
+
+    function openApp(platform) {
+      alert(`Buka ${platform}... Salin tautan video lalu kembali ke SnapCat!`);
+    }
+
+    function switchNavTab(btn, tabName) {
+      const items = document.querySelectorAll('.nav-dock-item');
+      items.forEach(item => item.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const pages = document.querySelectorAll('.app-tab-page');
+      pages.forEach(page => page.classList.remove('active', 'tab-entering'));
+
+      const homeBanner = document.getElementById('appTopRedHeader');
+      const headerTitle = document.getElementById('headerTitle');
+      const headerBackBtn = document.getElementById('headerBackBtn');
+      const headerAvatarBox = document.getElementById('headerAvatarBox');
+
+      if (tabName !== 'home' && homeBanner) {
+        // Pindah ke Unduhan / Pengaturan: Red header ketarik ke atas (compact view)
+        homeBanner.classList.add('pull-up');
+        if (headerBackBtn) headerBackBtn.style.display = 'flex';
+        if (headerAvatarBox) headerAvatarBox.style.display = 'none';
+        if (headerTitle) headerTitle.innerText = tabName === 'download' ? 'Unduhan' : 'Pengaturan';
+      } else if (tabName === 'home' && homeBanner) {
+        // Kembali ke Beranda: Red header didorong kembali ke bawah (full home view)
+        homeBanner.classList.remove('pull-up');
+        if (headerBackBtn) headerBackBtn.style.display = 'none';
+        if (headerAvatarBox) headerAvatarBox.style.display = 'flex';
+        if (headerTitle) headerTitle.innerText = 'SnapCat';
+      }
+
+      // Auto scroll container back to top on tab switch so new page starts at top
+      const mainAppScreen = document.getElementById('mainAppScreen');
+      if (mainAppScreen) {
+        mainAppScreen.scrollTop = 0;
+      }
+
+      const targetPageId = tabName === 'home' ? 'homeTabPage' : (tabName === 'download' ? 'downloadTabPage' : 'settingsTabPage');
+      const targetPage = document.getElementById(targetPageId);
+
+      if (targetPage) {
+        targetPage.classList.add('active', 'tab-entering');
+        setTimeout(() => {
+          targetPage.classList.remove('tab-entering');
+        }, 1000);
+      }
+
+      if (tabName === 'download') {
+        const badge = document.getElementById('dockDlBadge');
+        if (badge) badge.style.display = 'none';
+      }
+    }
+
+    /* ========================================================
+       HALAMAN UNDUHAN (DOWNLOADS PAGE) INTERACTIVITY LOGIC
+       ======================================================== */
+
+    // Toast Notification helper - STRICTLY ALLOW ONLY THE 5 LISTED MESSAGES
+    let toastTimer = null;
+    const ALLOWED_TOAST_MESSAGES = [
+      'memulai unduhan',
+      'tautan di temukan',
+      'tautan tidak valid',
+      'riwayat berhasil dihapus',
+      'memeriksa pembaruan'
+    ];
+
+    function showToast(msg, isError = false) {
+      if (!ALLOWED_TOAST_MESSAGES.includes(msg)) {
+        return; // BLOCK ANY OTHER UNLISTED NOTIFICATION
+      }
+
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.innerText = msg;
+      if (isError) {
+        toastIcon.setAttribute('stroke', '#EF4444');
+        toastIcon.innerHTML = `<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>`;
+      } else {
+        toastIcon.setAttribute('stroke', 'var(--accent-primary, #EF4444)');
+        toastIcon.innerHTML = `<polyline points="20 6 9 17 4 12"></polyline>`;
+      }
+
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Filter downloads by status pill (all, downloading, completed, failed)
+    function filterDownloads(category, pillBtn) {
+      const pills = document.querySelectorAll('.dl-filter-pill');
+      pills.forEach(p => p.classList.remove('active'));
+      if (pillBtn) pillBtn.classList.add('active');
+
+      const cards = document.querySelectorAll('.dl-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        if (category === 'all' || status === category) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Hide date group labels if all cards inside are hidden
+      const groups = document.querySelectorAll('.dl-date-group');
+      groups.forEach(group => {
+        const visibleCardsInGroup = group.querySelectorAll('.dl-card[style*="display: flex"]');
+        if (visibleCardsInGroup.length === 0) {
+          group.style.display = 'none';
+        } else {
+          group.style.display = 'flex';
+        }
+      });
+
+      const emptyState = document.getElementById('dlEmptyState');
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
+      }
+    }
+
+    // Toggle pause & resume download for item 1
+    const pauseStateMap = {};
+    function togglePauseDownload(itemId) {
+      const btn = document.getElementById(`pauseBtn-${itemId}`);
+      const fill = document.getElementById(`progFill-${itemId}`);
+      const meta = document.getElementById(`progMeta-${itemId}`);
+
+      if (!btn) return;
+      const pauseIcon = btn.querySelector('.pause-icon');
+      const playIcon = btn.querySelector('.play-icon');
+
+      const isPaused = pauseStateMap[itemId] || false;
+
+      if (!isPaused) {
+        // Pause it
+        pauseStateMap[itemId] = true;
+        if (pauseIcon) pauseIcon.style.display = 'none';
+        if (playIcon) playIcon.style.display = 'block';
+        if (fill) fill.classList.remove('animated-stripes');
+        if (meta) meta.innerText = 'Dijeda • 5.2 / 8.9 MB';
+      } else {
+        // Resume it
+        pauseStateMap[itemId] = false;
+        if (pauseIcon) pauseIcon.style.display = 'block';
+        if (playIcon) playIcon.style.display = 'none';
+        if (fill) fill.classList.add('animated-stripes');
+        if (meta) meta.innerText = '5.2 / 8.9 MB • 2.4 MB/s';
+      }
+    }
+
+    // Retry failed download
+    function retryDownload(itemId) {
+      const statusBox = document.getElementById(`statusBox-${itemId}`);
+      const progBox = document.getElementById(`progBox-${itemId}`);
+      const btn = document.getElementById(`retryBtn-${itemId}`);
+      const card = document.querySelector(`.dl-card[data-id="${itemId}"]`);
+
+      if (statusBox) statusBox.style.display = 'none';
+      if (progBox) progBox.style.display = 'flex';
+      if (card) card.setAttribute('data-status', 'downloading');
+
+      let pct = 58;
+      const fill = document.getElementById(`progFill-${itemId}`);
+      const pctText = document.getElementById(`progPct-${itemId}`);
+      const metaText = document.getElementById(`progMeta-${itemId}`);
+
+      if (btn) btn.disabled = true;
+
+      const timer = setInterval(() => {
+        pct += 10;
+        if (pct > 100) pct = 100;
+        if (fill) fill.style.width = pct + '%';
+        if (pctText) pctText.innerText = pct + '%';
+
+        if (pct >= 100) {
+          clearInterval(timer);
+          if (card) {
+            card.setAttribute('data-status', 'completed');
+            card.className = 'dl-card completed';
+          }
+          if (progBox) {
+            progBox.outerHTML = `
+              <div class="dl-completed-meta">
+                <span class="dl-size-badge">8.9 MB</span>
+                <span class="dl-status-badge success">✓ Selesai</span>
+              </div>
+            `;
+          }
+          if (btn) {
+            btn.className = 'dl-icon-action-btn pause-btn';
+            btn.style.background = '#D1FAE5';
+            btn.style.color = '#059669';
+            btn.style.cursor = 'default';
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+            btn.onclick = null;
+          }
+          // Update counts
+          updateFilterCounts();
+        }
+      }, 400);
+    }
+
+    function updateFilterCounts() {
+      const allCards = document.querySelectorAll('.dl-card');
+      let downloading = 0, completed = 0, failed = 0;
+      allCards.forEach(c => {
+        const s = c.getAttribute('data-status');
+        if (s === 'downloading') downloading++;
+        else if (s === 'completed') completed++;
+        else if (s === 'failed') failed++;
+      });
+      const countAll = document.getElementById('countAll');
+      const countDl = document.getElementById('countDownloading');
+      const countComp = document.getElementById('countCompleted');
+      const countFail = document.getElementById('countFailed');
+      if (countAll) countAll.innerText = allCards.length;
+      if (countDl) countDl.innerText = downloading;
+      if (countComp) countComp.innerText = completed;
+      if (countFail) countFail.innerText = failed;
+
+      const badge = document.getElementById('dockDlBadge');
+      if (badge) {
+        if (downloading > 0) {
+          badge.innerText = downloading;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+
+    // Media Player Modal Control
+    function playMedia(title, imgUrl) {
+      const modal = document.getElementById('mediaPlayerModal');
+      const modalTitle = document.getElementById('mediaModalTitle');
+      const modalImg = document.getElementById('mediaModalImg');
+
+      if (modalTitle) modalTitle.innerText = title;
+      if (modalImg) modalImg.src = imgUrl;
+
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeMediaModal() {
+      const modal = document.getElementById('mediaPlayerModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    // Action Sheet Options Modal Control
+    let activeActionItemId = null;
+    let activeActionItemTitle = '';
+
+    function openOptionsModal(itemId, title, status) {
+      activeActionItemId = itemId;
+      activeActionItemTitle = title;
+      const modal = document.getElementById('actionSheetModal');
+      const titleElem = document.getElementById('actionSheetTitle');
+      if (titleElem) titleElem.innerText = title;
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeActionSheetModal() {
+      const modal = document.getElementById('actionSheetModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function handleOptionAction(actionType) {
+      closeActionSheetModal();
+      if (actionType === 'open') {
+        showToast(`Membuka berkas "${activeActionItemTitle}"...`);
+      } else if (actionType === 'share') {
+        showToast(`Membuka menu bagikan untuk "${activeActionItemTitle}"`);
+      } else if (actionType === 'copy') {
+        showToast(`Tautan video disalin ke papan klip`);
+      } else if (actionType === 'delete') {
+        if (activeActionItemId) {
+          const card = document.querySelector(`.dl-card[data-id="${activeActionItemId}"]`);
+          if (card) {
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+              card.remove();
+              updateFilterCounts();
+              showToast(`Berhasil menghapus "${activeActionItemTitle}"`);
+            }, 300);
+          }
+        }
+      }
+    }
+
+    // Close action sheet when clicking backdrop outside
+    document.addEventListener('DOMContentLoaded', () => {
+      const actionModal = document.getElementById('actionSheetModal');
+      if (actionModal) {
+        actionModal.addEventListener('click', (e) => {
+          if (e.target === actionModal) closeActionSheetModal();
+        });
+      }
+      const mediaModal = document.getElementById('mediaPlayerModal');
+      if (mediaModal) {
+        mediaModal.addEventListener('click', (e) => {
+          if (e.target === mediaModal) closeMediaModal();
+        });
+      }
+      const historyModal = document.getElementById('historyModal');
+      if (historyModal) {
+        historyModal.addEventListener('click', (e) => {
+          if (e.target === historyModal) closeHistoryModal();
+        });
+      }
+    });
+
+    /* ========================================================
+       SEARCH URL HISTORY MODAL LOGIC
+       ======================================================== */
+    const DEFAULT_HISTORY = [
+      { id: 101, url: 'https://vt.tiktok.com/ZS2x9LpQ/', platform: 'tiktok', timestamp: 'Hari ini, 19:42' },
+      { id: 102, url: 'https://youtu.be/dQw4w9WgXcQ', platform: 'youtube', timestamp: 'Hari ini, 18:15' }
+    ];
+
+    function getHistoryList() {
+      try {
+        const data = localStorage.getItem('snapcat_url_history');
+        if (!data) return DEFAULT_HISTORY;
+        return JSON.parse(data);
+      } catch (e) {
+        return DEFAULT_HISTORY;
+      }
+    }
+
+    function saveHistoryList(list) {
+      try {
+        localStorage.setItem('snapcat_url_history', JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function addUrlToHistory(urlStr) {
+      if (!urlStr) return;
+      let list = getHistoryList();
+      list = list.filter(item => item.url.toLowerCase() !== urlStr.toLowerCase());
+
+      let platform = 'generic';
+      if (urlStr.includes('tiktok')) platform = 'tiktok';
+      else if (urlStr.includes('youtube') || urlStr.includes('youtu.be')) platform = 'youtube';
+
+      const now = new Date();
+      const timeStr = `Hari ini, ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      list.unshift({
+        id: Date.now(),
+        url: urlStr,
+        platform: platform,
+        timestamp: timeStr
+      });
+
+      if (list.length > 30) list = list.slice(0, 30);
+      saveHistoryList(list);
+    }
+
+    function openHistoryModal() {
+      renderHistoryItems();
+      const modal = document.getElementById('historyModal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeHistoryModal() {
+      const modal = document.getElementById('historyModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function renderHistoryItems() {
+      const container = document.getElementById('historyListBody');
+      if (!container) return;
+
+      const list = getHistoryList();
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="history-empty-box">
+            <div class="history-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+              </svg>
+            </div>
+            <span class="history-empty-title">Belum ada riwayat</span>
+            <span class="history-empty-desc">Tautan yang kamu cari atau tempelkan akan tersimpan otomatis di sini.</span>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      list.forEach(item => {
+        let iconHtml = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+        if (item.platform === 'tiktok') {
+          iconHtml = `<img src="tiktok.png" width="16" height="16" style="object-fit:contain;">`;
+        } else if (item.platform === 'youtube') {
+          iconHtml = `<img src="yt.png" width="16" height="16" style="object-fit:contain;">`;
+        }
+
+        html += `
+          <div class="history-item-card" id="historyCard-${item.id}">
+            <div class="history-item-left">
+              <div class="history-icon-badge">${iconHtml}</div>
+              <div class="history-item-info">
+                <span class="history-url-text" title="${item.url}">${item.url}</span>
+                <span class="history-meta-text">${item.timestamp}</span>
+              </div>
+            </div>
+            <div class="history-item-actions">
+              <button class="history-action-btn use-btn" onclick="useHistoryUrl('${item.url}')">
+                <span>Tempel</span>
+              </button>
+              <button class="history-action-btn del-btn" onclick="deleteHistoryItem(${item.id})" title="Hapus">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function useHistoryUrl(urlStr) {
+      const input = document.getElementById('linkInput');
+      if (input) {
+        input.value = urlStr;
+      }
+      closeHistoryModal();
+      triggerDownload();
+    }
+
+    function deleteHistoryItem(id) {
+      let list = getHistoryList();
+      list = list.filter(item => item.id !== id);
+      saveHistoryList(list);
+      renderHistoryItems();
+      showToast("riwayat berhasil dihapus");
+    }
+
+    function clearAllHistory() {
+      saveHistoryList([]);
+      renderHistoryItems();
+      showToast("riwayat berhasil dihapus");
+    }
+
+    function toggleDropdown() {
+      const trigger = document.getElementById('dropdownTrigger');
+      const list = document.getElementById('optionsList');
+      if (trigger && list) {
+        trigger.classList.toggle('active');
+        list.classList.toggle('active');
+      }
+    }
+
+    function updateSlideIndicator(carousel) {
+      const scrollLeft = carousel.scrollLeft;
+      const width = carousel.offsetWidth;
+      const currentIndex = Math.round(scrollLeft / width) + 1;
+
+      const badge = document.getElementById('slideBadge');
+      if (badge) badge.innerText = `Slide ${currentIndex}`;
+
+      const dots = document.querySelectorAll('.slide-dot-item');
+      dots.forEach((dot, idx) => {
+        if (idx === currentIndex - 1) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+
+    function triggerDownload() {
+      const input = document.getElementById('linkInput');
+      const rawVal = input ? input.value.trim() : '';
+      const val = rawVal.toLowerCase();
+
+      const previewSection = document.getElementById('previewSection');
+      const previewMediaContainer = document.getElementById('previewMediaContainer');
+      const previewPlatformBadge = document.getElementById('previewPlatformBadge');
+      const previewPlatformName = document.getElementById('previewPlatformName');
+      const previewPlatformIcon = document.getElementById('previewPlatformIcon');
+      const previewCreator = document.getElementById('previewCreator');
+      const previewVideoTitle = document.getElementById('previewVideoTitle');
+      const optionsList = document.getElementById('optionsList');
+      const dropdownLabel = document.getElementById('dropdownLabel');
+
+      if (!val) {
+        showToast("tautan tidak valid", true);
+        return;
+      }
+
+      // Save valid searched URL into History
+      addUrlToHistory(rawVal);
+
+      // Ensure dropdown accordion starts closed by default
+      const dropdownTrigger = document.getElementById('dropdownTrigger');
+      if (dropdownTrigger) dropdownTrigger.classList.remove('active');
+      if (optionsList) optionsList.classList.remove('active');
+
+      // Link Format Analyzers
+      const isTikTokSlide = val.includes('slide') || val.includes('photo');
+      const isYoutubeLive = val.includes('youtube') && val.includes('live');
+      const isYoutubeReels = (val.includes('youtube') || val.includes('youtu.be')) && (val.includes('shorts') || val.includes('reels'));
+      const isYoutubeStandard = (val.includes('youtube') || val.includes('youtu.be')) && !isYoutubeLive && !isYoutubeReels;
+
+      const ytImg = `<img src="yt.png" width="18" height="18" style="object-fit: contain;">`;
+      const ttImg = `<img src="tiktok.png" width="18" height="18" style="object-fit: contain;">`;
+
+      if (isTikTokSlide) {
+        // 1. TikTok Photo Slide (Carousels)
+        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge tiktok';
+        if (previewPlatformName) previewPlatformName.innerText = 'TikTok Photo';
+        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ttImg;
+        if (previewCreator) previewCreator.innerText = '@nature_vibes';
+        if (previewVideoTitle) previewVideoTitle.innerText = 'Aesthetic Photo Collection #Slide 2026';
+        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Foto & Format';
+
+        if (previewMediaContainer) {
+          previewMediaContainer.innerHTML = `
+            <div class="preview-banner-box">
+              <span class="slide-number-badge" id="slideBadge">Slide 1</span>
+              <div class="slide-carousel-wrapper" id="slideCarousel" onscroll="updateSlideIndicator(this)">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 1">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 2">
+                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80" class="slide-carousel-item" alt="Slide 3">
+              </div>
+            </div>
+            <div class="slide-dots-container">
+              <span class="slide-dot-item active"></span>
+              <span class="slide-dot-item"></span>
+              <span class="slide-dot-item"></span>
+            </div>
+          `;
+        }
+
+        if (optionsList) {
+          optionsList.innerHTML = `
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">Slide 1 Foto</span><span class="option-sub">JPG • 2.1 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('Slide 1 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">Slide 2 Foto</span><span class="option-sub">JPG • 1.9 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('Slide 2 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">Slide 3 Foto</span><span class="option-sub">JPG • 2.4 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('Slide 3 JPG')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">Semua Foto (ZIP)</span><span class="option-sub">Paket Foto • 6.4 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('Semua Slide ZIP')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh ZIP</span></button>
+            </div>
+          `;
+        }
+      } else if (isYoutubeLive) {
+        // 2. YouTube Live Stream (Landscape)
+        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube-live';
+        if (previewPlatformName) previewPlatformName.innerText = 'YouTube Live';
+        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
+        if (previewCreator) previewCreator.innerText = '@LiveGamingHQ';
+        if (previewVideoTitle) previewVideoTitle.innerText = '🔴 LIVE STREAM - Esports World Championship Final 2026';
+        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
+
+        if (previewMediaContainer) {
+          previewMediaContainer.innerHTML = `
+            <div class="preview-banner-box youtube-aspect">
+              <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="Live Thumbnail">
+            </div>
+          `;
+        }
+
+        if (optionsList) {
+          optionsList.innerHTML = `
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 450 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('1080p Full HD')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 210 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('720p HD')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+            <div class="option-item">
+              <div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 45 MB</span></div>
+              <button class="option-download-btn" onclick="downloadFile('Audio MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button>
+            </div>
+          `;
+        }
+      } else if (isYoutubeReels) {
+        // 3. YouTube Shorts / Reels (Portrait)
+        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube';
+        if (previewPlatformName) previewPlatformName.innerText = 'YouTube Shorts';
+        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
+        if (previewCreator) previewCreator.innerText = '@ShortsCreator';
+        if (previewVideoTitle) previewVideoTitle.innerText = 'Amazing Skateboard Trick #Shorts #2026';
+        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
+
+        if (previewMediaContainer) {
+          previewMediaContainer.innerHTML = `
+            <div class="preview-banner-box">
+              <img src="https://images.unsplash.com/photo-1520116468816-95b69f847357?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="Shorts Thumbnail">
+            </div>
+          `;
+        }
+
+        if (optionsList) {
+          optionsList.innerHTML = `
+            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 18.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 10.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 2.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube Shorts MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+          `;
+        }
+      } else if (isYoutubeStandard) {
+        // 4. YouTube Standard Video (Landscape)
+        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge youtube';
+        if (previewPlatformName) previewPlatformName.innerText = 'YouTube';
+        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ytImg;
+        if (previewCreator) previewCreator.innerText = '@ReyaChannel';
+        if (previewVideoTitle) previewVideoTitle.innerText = 'Cinematic Vlog 2026 - High Resolution Video';
+        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
+
+        if (previewMediaContainer) {
+          previewMediaContainer.innerHTML = `
+            <div class="preview-banner-box youtube-aspect">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="YouTube Thumbnail">
+            </div>
+          `;
+        }
+
+        if (optionsList) {
+          optionsList.innerHTML = `
+            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 45.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 22.1 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">480p SD</span><span class="option-sub">MP4 • 12.8 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube 480p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 5.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('YouTube MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+          `;
+        }
+      } else {
+        // 5. Default TikTok Video (Portrait)
+        if (previewPlatformBadge) previewPlatformBadge.className = 'platform-badge tiktok';
+        if (previewPlatformName) previewPlatformName.innerText = 'TikTok';
+        if (previewPlatformIcon) previewPlatformIcon.innerHTML = ttImg;
+        if (previewCreator) previewCreator.innerText = '@reyaramani458';
+        if (previewVideoTitle) previewVideoTitle.innerText = 'Aesthetic Sunset Cinematic Vlog #2026 - High Quality Short';
+        if (dropdownLabel) dropdownLabel.innerText = 'Pilih Format & Resolusi';
+
+        if (previewMediaContainer) {
+          previewMediaContainer.innerHTML = `
+            <div class="preview-banner-box">
+              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80" class="preview-banner-img" alt="TikTok Thumbnail">
+            </div>
+          `;
+        }
+
+        if (optionsList) {
+          optionsList.innerHTML = `
+            <div class="option-item"><div class="option-info"><span class="option-res">1080p Full HD</span><span class="option-sub">MP4 • 24.5 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 1080p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">720p HD</span><span class="option-sub">MP4 • 14.2 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 720p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">480p SD</span><span class="option-sub">MP4 • 8.1 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok 480p')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+            <div class="option-item"><div class="option-info"><span class="option-res">Audio</span><span class="option-sub">MP3 • 3.8 MB</span></div><button class="option-download-btn" onclick="downloadFile('TikTok MP3')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Unduh</span></button></div>
+          `;
+        }
+      }
+
+      // SMOOTHLY TRANSITION FROM PLACEHOLDER TO PREVIEW CARD WITH BLUR-IN KEYFRAME!
+      const previewPlaceholder = document.getElementById('previewPlaceholder');
+      const previewCard = document.getElementById('previewCard');
+
+      if (previewPlaceholder && previewPlaceholder.style.display !== 'none') {
+        previewPlaceholder.classList.add('fade-out');
+        setTimeout(() => {
+          previewPlaceholder.style.display = 'none';
+          if (previewCard) {
+            previewCard.classList.remove('show');
+            void previewCard.offsetWidth; // Trigger reflow for keyframes
+            previewCard.classList.add('show');
+          }
+          showToast("tautan di temukan");
+        }, 320);
+      } else if (previewCard) {
+        previewCard.classList.remove('show');
+        void previewCard.offsetWidth; // Trigger reflow for re-animation on consecutive searches
+        previewCard.classList.add('show');
+        showToast("tautan di temukan");
+      }
+    }
+
+    function startAppLoading() {
+      const bottomSheet = document.getElementById('bottomSheet');
+      const logoBox = document.getElementById('logoBox');
+      const sheetContent = document.getElementById('sheetContent');
+      const loadingScreen = document.getElementById('loadingScreen');
+      const mainAppScreen = document.getElementById('mainAppScreen');
+      const catVideo = document.getElementById('catVideo');
+      const progressFill = document.getElementById('catGapProgress');
+      const barLogText = document.getElementById('barLogText');
+
+      // 1. Logo box, slide text & buttons FADE OUT SLOWLY OVER 1 SECOND WHEN CLICKING START NOW!
+      logoBox.style.transition = 'opacity 1.0s ease, transform 1.0s ease';
+      logoBox.style.opacity = '0';
+      logoBox.style.transform = 'translateX(-50%) scale(0.5)';
+
+      sheetContent.style.transition = 'opacity 1.0s ease';
+      sheetContent.style.opacity = '0';
+
+      setTimeout(() => {
+        sheetContent.style.display = 'none';
+      }, 1000);
+
+      // 2. Visible 1-SECOND DELAY (1000ms) before upward glide ("meluncur")
+      setTimeout(() => {
+        // 3. Pure white sheet glides UP smoothly to top (-34px)
+        bottomSheet.classList.add('fullscreen-mode');
+
+        // 4. AFTER bottom sheet reaches top (650ms), FADE IN loading screen gracefully
+        setTimeout(() => {
+          loadingScreen.style.display = 'flex';
+
+          requestAnimationFrame(() => {
+            loadingScreen.classList.add('active');
+          });
+
+          if (catVideo) {
+            catVideo.currentTime = 0;
+            catVideo.playbackRate = 0.7;
+            catVideo.play();
+          }
+
+          let progress = 0;
+          const totalDurationMs = 5000;
+          const updateIntervalMs = 50;
+          const stepIncrement = 100 / (totalDurationMs / updateIntervalMs);
+
+          const progressTimer = setInterval(() => {
+            progress += stepIncrement;
+
+            if (progress > 100) progress = 100;
+            if (progressFill) progressFill.style.width = progress + '%';
+
+            const pct = Math.round(progress);
+            let logMsg = "MENYIAPKAN CORE ENGINE...";
+            if (pct > 20 && pct <= 40) logMsg = "MENGINSTALL LIBRARY MEDIA...";
+            else if (pct > 40 && pct <= 65) logMsg = "MENGINSTALL FFMPEG DECODER...";
+            else if (pct > 65 && pct <= 85) logMsg = "MENGHUBUNGKAN AKSELERASI...";
+            else if (pct > 85 && pct < 100) logMsg = "MEMVERIFIKASI SISTEM...";
+            else if (pct >= 100) logMsg = "SELESAI";
+
+            if (barLogText) barLogText.innerText = `${logMsg} ${pct}%`;
+
+            if (progress >= 90 && catVideo) {
+              catVideo.playbackRate = 1.0;
+            }
+
+            if (progress >= 100) {
+              clearInterval(progressTimer);
+              if (barLogText) barLogText.innerText = "SELESAI 100%";
+
+              // 5. THIS SPECIFIC FADE OUT (TRANSITION TO MAIN APP): ULTRA SMOOTH & SLOW 2.0 SECONDS!
+              setTimeout(() => {
+                mainAppScreen.style.display = 'flex';
+                requestAnimationFrame(() => {
+                  mainAppScreen.classList.add('active');
+                });
+
+                bottomSheet.style.transition = "opacity 2.0s ease-in-out";
+                bottomSheet.style.opacity = "0";
+
+                setTimeout(() => {
+                  bottomSheet.style.display = 'none';
+                }, 2000);
+              }, 400);
+            }
+          }, updateIntervalMs);
+        }, 650);
+
+      }, 1000);
+    }
+
+    // Helper functions for toast triggers requested by user
+    function downloadFile(qualityTitle) {
+      showToast('memulai unduhan');
+    }
+
+    function downloadAllSlides() {
+      showToast('memulai unduhan');
+    }
+
+    function checkAppUpdates() {
+      showToast('memeriksa pembaruan');
+    }
+
+    // Auto cleanup boot animation overlay & is-booting class after 2.1s so interactive rotation works 100% seamlessly
+    setTimeout(() => {
+      const screen = document.querySelector('.phone-screen');
+      if (screen) screen.classList.remove('is-booting');
+      const curtain = document.getElementById('appBootCurtain');
+      if (curtain) curtain.remove();
+    }, 2100);
+  </script>
+</body>
+
+</html>
