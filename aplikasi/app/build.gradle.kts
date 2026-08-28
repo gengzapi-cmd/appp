@@ -41,4 +41,14 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.webkit:webkit:1.10.0")
+
+    // Networking, Async Coroutines & JSON Parsing
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Downloader & FFmpeg Engines
+    implementation("com.github.junkfood02.youtubedl-android:library:0.17.0")
+    implementation("com.github.junkfood02.youtubedl-android:ffmpeg:0.17.0")
 }

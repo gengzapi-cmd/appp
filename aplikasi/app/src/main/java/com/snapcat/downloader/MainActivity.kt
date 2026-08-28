@@ -6,23 +6,47 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
+    companion object {
+        private var activeInstance: MainActivity? = null
+
+        fun sendProgressToJs(
+            downloadId: String,
+            percent: Int,
+            speedText: String,
+            status: String,
+            fileUriStr: String = ""
+        ) {
+            activeInstance?.let { activity ->
+                activity.runOnUiThread {
+                    val safeUri = fileUriStr.replace("'", "\\'")
+                    val safeSpeed = speedText.replace("'", "\\'")
+                    val safeId = downloadId.replace("'", "\\'")
+                    val jsScript = "if (window.onNativeDownloadProgress) { window.onNativeDownloadProgress('$safeId', $percent, '$safeSpeed', '$status', '$safeUri'); }"
+                    activity.webView.evaluateJavascript(jsScript, null)
+                }
+            }
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        activeInstance = this
 
-        // Konfigurasi True Edge-to-Edge Layout (layar penuh menembus status bar & nav bar)
+        // True Edge-to-Edge Layout
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -39,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         windowInsetsController.isAppearanceLightStatusBars = false
         windowInsetsController.isAppearanceLightNavigationBars = false
 
-        // Membuat WebView secara penuh di activity
         webView = WebView(this).apply {
             layoutParams = android.view.ViewGroup.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -51,7 +74,21 @@ class MainActivity : AppCompatActivity() {
         setupWebViewSettings()
         setupJavaScriptBridge()
 
-        // Muat UI HTML dari folder assets
+        // Auto Request Permissions (Notification + Storage) on app launch
+        PermissionHelper.requestPermissions(this)
+
+        // Initialize yt-dlp & FFmpeg asynchronously in background
+        CoroutineScope(Dispatchers.IO).launch {
+            YtDlpDownloader.init(applicationContext)
+            runOnUiThread {
+                webView.evaluateJavascript(
+                    "window.isNativeEngineReady = true; if(window.onNativeEngineReady) window.onNativeEngineReady();",
+                    null
+                )
+            }
+        }
+
+        // Load HTML UI from assets
         webView.loadUrl("file:///android_asset/index.html")
     }
 
@@ -74,7 +111,6 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // Memberikan sinyal ke JavaScript bahwa Native Android Bridge sudah siap
                 webView.evaluateJavascript(
                     "console.log('SnapCat Native Android Bridge Connected!');",
                     null
@@ -84,21 +120,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupJavaScriptBridge() {
-        webView.addJavascriptInterface(WebAppInterface(), "AndroidBridge")
+        webView.addJavascriptInterface(WebAppInterface(this), "AndroidBridge")
     }
 
-    inner class WebAppInterface {
-        @JavascriptInterface
-        fun showToast(message: String) {
-            runOnUiThread {
-                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-            }
+    override fun onDestroy() {
+        if (activeInstance == this) {
+            activeInstance = null
         }
-
-        @JavascriptInterface
-        fun log(message: String) {
-            android.util.Log.d("SnapCatNative", message)
-        }
+        super.onDestroy()
     }
 
     @Deprecated("Deprecated in Java")

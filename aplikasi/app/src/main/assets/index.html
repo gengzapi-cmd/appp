@@ -3949,7 +3949,7 @@
 
           <!-- Section 1: Custom Color Spectrum Slider & HEX Input -->
           <div class="color-slider-section" style="width:100%;">
-            <span class="color-section-label">Warna Kustom (Slider Spektrum Pelangi & HEX)</span>
+            <span class="color-section-label">Warna Kustom</span>
             <div class="color-picker-input-wrapper">
               <div class="color-picker-preview-box" id="modalColorPreview"
                 style="background:var(--accent-primary, #EF4444);"
@@ -3967,7 +3967,7 @@
 
           <!-- Section 2: Preset Color Swatches Ready To Pick -->
           <div class="color-presets-section" style="width:100%;">
-            <span class="color-section-label">Rekomendasi Warna Aksen</span>
+            <span class="color-section-label">Rekomendasi Warna</span>
             <div class="color-swatches-grid">
               <button class="color-swatch-btn" style="background:#EF4444;" onclick="selectPresetColor('#EF4444')" title="Merah SnapCat"></button>
               <button class="color-swatch-btn" style="background:#E11D48;" onclick="selectPresetColor('#E11D48')" title="Rose Crimson"></button>
@@ -4428,9 +4428,48 @@
       }
     }
 
-    function downloadFile(formatName) {
-      alert(`Memulai pengunduhan untuk format: ${formatName}`);
+    function downloadFile(label) {
+      const urlInput = document.getElementById('urlInput');
+      const targetUrl = urlInput ? urlInput.value.trim() : '';
+
+      let format = 'mp4';
+      let quality = '1080p';
+      let platform = 'auto';
+
+      if (label.toLowerCase().includes('mp3') || label.toLowerCase().includes('audio')) {
+        format = 'mp3';
+        quality = 'mp3';
+      } else if (label.includes('720p')) {
+        quality = '720p';
+      } else if (label.includes('480p')) {
+        quality = '480p';
+      }
+
+      if (targetUrl.includes('tiktok.com')) {
+        platform = 'tiktok';
+      } else if (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be')) {
+        platform = 'youtube';
+      }
+
+      const downloadId = 'dl_' + Date.now();
+
+      if (window.AndroidBridge && window.AndroidBridge.startDownload) {
+        window.AndroidBridge.startDownload(targetUrl, platform, quality, format, downloadId);
+        showToast("Memulai pengunduhan...");
+      } else {
+        showToast("Memulai pengunduhan " + label);
+      }
     }
+
+    window.onNativeDownloadProgress = function(downloadId, percent, speedText, status, fileUriStr) {
+      if (status === 'downloading') {
+        showToast(`Progres: ${percent}% (${speedText})`);
+      } else if (status === 'completed') {
+        showToast("Unduhan Selesai! Tersimpan di Downloads/SnapCat/");
+      } else if (status === 'failed') {
+        showToast("Gagal mengunduh: " + speedText);
+      }
+    };
 
     function setAppTheme(theme, btn) {
       const themeBtns = document.querySelectorAll('.theme-pill-btn');
@@ -5361,23 +5400,43 @@
           }
 
           let progress = 0;
-          const totalDurationMs = 5000;
-          const updateIntervalMs = 50;
-          const stepIncrement = 100 / (totalDurationMs / updateIntervalMs);
+          let engineFullyReady = false;
+
+          // Check initial native engine ready state
+          if (window.isNativeEngineReady || (window.AndroidBridge && window.AndroidBridge.isEngineReady && window.AndroidBridge.isEngineReady())) {
+            engineFullyReady = true;
+          }
+
+          window.onNativeEngineReady = function() {
+            engineFullyReady = true;
+          };
 
           const progressTimer = setInterval(() => {
-            progress += stepIncrement;
+            // Check native bridge continuously
+            if (window.AndroidBridge && window.AndroidBridge.isEngineReady && window.AndroidBridge.isEngineReady()) {
+              engineFullyReady = true;
+            }
+
+            if (!engineFullyReady) {
+              // Hold at 85% until native binary extraction/initialization actually completes
+              if (progress < 85) {
+                progress += 1.5;
+              }
+            } else {
+              // Rapidly complete to 100% when native engine is verified ready
+              progress += 5.0;
+            }
 
             if (progress > 100) progress = 100;
             if (progressFill) progressFill.style.width = progress + '%';
 
             const pct = Math.round(progress);
             let logMsg = "MENYIAPKAN CORE ENGINE...";
-            if (pct > 20 && pct <= 40) logMsg = "MENGINSTALL LIBRARY MEDIA...";
-            else if (pct > 40 && pct <= 65) logMsg = "MENGINSTALL FFMPEG DECODER...";
-            else if (pct > 65 && pct <= 85) logMsg = "MENGHUBUNGKAN AKSELERASI...";
-            else if (pct > 85 && pct < 100) logMsg = "MEMVERIFIKASI SISTEM...";
-            else if (pct >= 100) logMsg = "SELESAI";
+            if (pct > 20 && pct <= 40) logMsg = "MENGINSTALL MESIN TIKTOK DEDICATED...";
+            else if (pct > 40 && pct <= 65) logMsg = "MENGINSTALL BINARY FFMPEG & YT-DLP...";
+            else if (pct > 65 && pct <= 85) logMsg = engineFullyReady ? "VERIFIKASI AKSELERASI MESIN..." : "MEMPROSES INISIALISASI NATIVE BINARY...";
+            else if (pct > 85 && pct < 100) logMsg = "MENYELENGGARAKAN ENGINE NATIVE...";
+            else if (pct >= 100) logMsg = "MESIN READY 100%";
 
             if (barLogText) barLogText.innerText = `${logMsg} ${pct}%`;
 
@@ -5385,11 +5444,11 @@
               catVideo.playbackRate = 1.0;
             }
 
-            if (progress >= 100) {
+            // Only enter main app screen when progress is 100% AND native engine is VERIFIED READY!
+            if (progress >= 100 && (engineFullyReady || !window.AndroidBridge)) {
               clearInterval(progressTimer);
               if (barLogText) barLogText.innerText = "SELESAI 100%";
 
-              // 5. THIS SPECIFIC FADE OUT (TRANSITION TO MAIN APP): ULTRA SMOOTH & SLOW 2.0 SECONDS!
               setTimeout(() => {
                 mainAppScreen.style.display = 'flex';
                 requestAnimationFrame(() => {
@@ -5404,7 +5463,7 @@
                 }, 2000);
               }, 400);
             }
-          }, updateIntervalMs);
+          }, 50);
         }, 650);
 
       }, 1000);
