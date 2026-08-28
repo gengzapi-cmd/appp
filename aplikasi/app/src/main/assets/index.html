@@ -5469,13 +5469,36 @@
       }, 1000);
     }
 
-    // Helper functions for toast triggers requested by user
-    function downloadFile(qualityTitle) {
+    // Native Download Trigger Bridge
+    function downloadFile(qualityTitle, format = 'mp4') {
       showToast('memulai unduhan');
+
+      const input = document.getElementById('linkInput');
+      const currentUrl = input ? input.value.trim() : '';
+
+      let platform = 'generic';
+      const lowerUrl = currentUrl.toLowerCase();
+      if (lowerUrl.includes('tiktok.com')) platform = 'tiktok';
+      else if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) platform = 'youtube';
+      else if (lowerUrl.includes('instagram.com')) platform = 'instagram';
+      else if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.watch')) platform = 'facebook';
+      else if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) platform = 'twitter';
+
+      const downloadId = 'dl_' + Date.now();
+
+      if (window.AndroidBridge && window.AndroidBridge.startDownload) {
+        window.AndroidBridge.startDownload(
+          currentUrl,
+          platform,
+          qualityTitle,
+          format,
+          downloadId
+        );
+      }
     }
 
     function downloadAllSlides() {
-      showToast('memulai unduhan');
+      downloadFile('TikTok Photo Slide', 'zip');
     }
 
     function checkAppUpdates() {
