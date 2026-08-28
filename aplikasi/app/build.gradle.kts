@@ -15,6 +15,9 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters += listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -49,6 +52,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     // Downloader & FFmpeg Engines
-    implementation("com.github.junkfood02.youtubedl-android:library:0.17.0")
-    implementation("com.github.junkfood02.youtubedl-android:ffmpeg:0.17.0")
+    implementation("io.github.junkfood02.youtubedl-android:library:0.17.0")
+    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.17.0")
 }
