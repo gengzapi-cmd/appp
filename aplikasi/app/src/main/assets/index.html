@@ -25,7 +25,8 @@
       user-select: none;
     }
 
-    input, textarea {
+    input,
+    textarea {
       -webkit-user-select: text;
       user-select: text;
     }
@@ -76,9 +77,11 @@
         background: linear-gradient(135deg, #FFE4E6 0%, #FFF1F2 50%, #FECDD3 100%);
         padding: 20px;
       }
+
       body.dark-theme {
         background: linear-gradient(135deg, #090D16 0%, #0F172A 50%, #020617 100%) !important;
       }
+
       .phone-frame {
         width: 360px;
         height: 740px;
@@ -3211,7 +3214,7 @@
       width: 100%;
     }
 
-    .color-picker-wheel-box {
+    .color-picker-preview-box {
       position: relative;
       width: 44px;
       height: 44px;
@@ -3221,23 +3224,35 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       border: 2px solid #E5E7EB;
       flex-shrink: 0;
+      transition: transform 0.15s ease, background 0.1s ease;
     }
 
-    .color-picker-wheel-box input[type="color"] {
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      width: 70px;
-      height: 70px;
-      opacity: 0;
-      cursor: pointer;
+    .color-picker-preview-box:active {
+      transform: scale(0.92);
     }
 
-    .color-picker-preview {
+    .hue-slider-input {
       width: 100%;
-      height: 100%;
-      display: block;
-      transition: background 0.2s ease;
+      height: 14px;
+      border-radius: 10px;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+      background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+      cursor: pointer;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .hue-slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2.5px solid #1E293B;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
     }
 
     .color-hex-text-input {
@@ -3411,7 +3426,8 @@
 
       <!-- Toast Notification Bar -->
       <div class="toast-notification" id="toastNotification">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         <span id="toastMsg">Notifikasi</span>
@@ -3492,8 +3508,10 @@
               <div class="social-item" onclick="openApp('youtube')">
                 <div class="social-icon youtube">
                   <svg width="32" height="23" viewBox="0 0 28 20" fill="none">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M27.4118 3.07692C27.0882 1.86813 26.1412 0.916484 24.9412 0.589011C22.7647 0 14 0 14 0C14 0 5.23529 0 3.05882 0.589011C1.85882 0.916484 0.911765 1.86813 0.588235 3.07692C0 5.27473 0 9.89011 0 9.89011C0 9.89011 0 14.5055 0.588235 16.7033C0.911765 17.9121 1.85882 18.8637 3.05882 19.1912C5.23529 19.7802 14 19.7802 14 19.7802C14 19.7802 22.7647 19.7802 24.9412 19.1912C26.1412 18.8637 27.0882 17.9121 27.4118 16.7033C28 14.5055 28 9.89011 28 9.89011C28 9.89011 28 5.27473 27.4118 3.07692Z" fill="#FF0000"/>
-                    <path d="M11.2 14.1209V5.65934L18.48 9.89011L11.2 14.1209Z" fill="white"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M27.4118 3.07692C27.0882 1.86813 26.1412 0.916484 24.9412 0.589011C22.7647 0 14 0 14 0C14 0 5.23529 0 3.05882 0.589011C1.85882 0.916484 0.911765 1.86813 0.588235 3.07692C0 5.27473 0 9.89011 0 9.89011C0 9.89011 0 14.5055 0.588235 16.7033C0.911765 17.9121 1.85882 18.8637 3.05882 19.1912C5.23529 19.7802 14 19.7802 14 19.7802C14 19.7802 22.7647 19.7802 24.9412 19.1912C26.1412 18.8637 27.0882 17.9121 27.4118 16.7033C28 14.5055 28 9.89011 28 9.89011C28 9.89011 28 5.27473 27.4118 3.07692Z"
+                      fill="#FF0000" />
+                    <path d="M11.2 14.1209V5.65934L18.48 9.89011L11.2 14.1209Z" fill="white" />
                   </svg>
                 </div>
                 <span class="social-label">YouTube</span>
@@ -3833,7 +3851,8 @@
               <div class="settings-info">
                 <span class="settings-label">Versi aplikasi</span>
               </div>
-              <span class="dl-size-badge" style="background:var(--accent-light-bg);color:var(--accent-text);">v2.4.0</span>
+              <span class="dl-size-badge"
+                style="background:var(--accent-light-bg);color:var(--accent-text);">v2.4.0</span>
             </div>
           </div>
         </div>
@@ -3900,7 +3919,8 @@
         <div class="action-sheet-card history-modal-card">
           <div class="history-modal-header">
             <div class="history-modal-title-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #EF4444)"
+                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                 <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                 <path d="M12 11v4l2 2"></path>
@@ -3927,45 +3947,48 @@
               style="background:none; border:none; color:#9CA3AF; font-size:20px; font-weight:700; cursor:pointer; padding:0 4px;">✕</button>
           </div>
 
-          <!-- Section 1: Custom Color Input (At the top) -->
+          <!-- Section 1: Custom Color Spectrum Slider & HEX Input -->
           <div class="color-slider-section" style="width:100%;">
-            <span class="color-section-label">Warna Kustom</span>
+            <span class="color-section-label">Warna Kustom (Slider Spektrum Pelangi & HEX)</span>
             <div class="color-picker-input-wrapper">
-              <label class="color-picker-wheel-box" title="Pilih Warna Kustom">
-                <input type="color" id="modalColorInput" value="#EF4444" oninput="onModalColorChange(this.value)"
-                  onchange="onModalColorChange(this.value)">
-                <span class="color-picker-preview" id="modalColorPreview"
-                  style="background:var(--accent-primary, #EF4444);"></span>
-              </label>
-              <input type="text" id="modalColorHexText" value="#EF4444" class="color-hex-text-input" placeholder="#HEX"
-                onchange="onModalHexInput(this.value)">
+              <div class="color-picker-preview-box" id="modalColorPreview"
+                style="background:var(--accent-primary, #EF4444);"
+                onclick="document.getElementById('modalColorHexText').focus()" title="Klik untuk ubah HEX"></div>
+              <input type="text" id="modalColorHexText" value="#EF4444" class="color-hex-text-input" placeholder="#HEX (contoh: #EF4444)"
+                oninput="onModalHexInput(this.value)" onchange="onModalHexInput(this.value)">
+            </div>
+            <div style="margin-top: 14px;">
+              <input type="range" id="hueRangeSlider" min="0" max="360" value="0" class="hue-slider-input"
+                oninput="onHueSliderInput(this.value)">
             </div>
           </div>
 
           <div style="height:1px; background:#E5E7EB; width:100%; margin:16px 0;" class="color-divider"></div>
 
-          <!-- Section 2: Preset Color Swatches Ready To Pick (At the bottom) -->
+          <!-- Section 2: Preset Color Swatches Ready To Pick -->
           <div class="color-presets-section" style="width:100%;">
-            <span class="color-section-label">Rekomendasi Warna</span>
+            <span class="color-section-label">Rekomendasi Warna Aksen</span>
             <div class="color-swatches-grid">
-              <button class="color-swatch-btn" style="background:#EF4444;" onclick="selectPresetColor('#EF4444')"
-                title="Merah SnapCat"></button>
-              <button class="color-swatch-btn" style="background:#3B82F6;" onclick="selectPresetColor('#3B82F6')"
-                title="Biru Elektrik"></button>
-              <button class="color-swatch-btn" style="background:#8B5CF6;" onclick="selectPresetColor('#8B5CF6')"
-                title="Ungu Neon"></button>
-              <button class="color-swatch-btn" style="background:#10B981;" onclick="selectPresetColor('#10B981')"
-                title="Hijau Emerald"></button>
-              <button class="color-swatch-btn" style="background:#F97316;" onclick="selectPresetColor('#F97316')"
-                title="Oranye Ember"></button>
-              <button class="color-swatch-btn" style="background:#EC4899;" onclick="selectPresetColor('#EC4899')"
-                title="Pink Magenta"></button>
-              <button class="color-swatch-btn" style="background:#F59E0B;" onclick="selectPresetColor('#F59E0B')"
-                title="Kuning Amber"></button>
-              <button class="color-swatch-btn" style="background:#06B6D4;" onclick="selectPresetColor('#06B6D4')"
-                title="Cyan Aqua"></button>
-              <button class="color-swatch-btn" style="background:#0F172A;" onclick="selectPresetColor('#0F172A')"
-                title="Dark Slate"></button>
+              <button class="color-swatch-btn" style="background:#EF4444;" onclick="selectPresetColor('#EF4444')" title="Merah SnapCat"></button>
+              <button class="color-swatch-btn" style="background:#E11D48;" onclick="selectPresetColor('#E11D48')" title="Rose Crimson"></button>
+              <button class="color-swatch-btn" style="background:#FF5722;" onclick="selectPresetColor('#FF5722')" title="Oranye Merah"></button>
+              <button class="color-swatch-btn" style="background:#F97316;" onclick="selectPresetColor('#F97316')" title="Oranye"></button>
+              <button class="color-swatch-btn" style="background:#F59E0B;" onclick="selectPresetColor('#F59E0B')" title="Kuning Amber"></button>
+              <button class="color-swatch-btn" style="background:#EAB308;" onclick="selectPresetColor('#EAB308')" title="Kuning Cerah"></button>
+
+              <button class="color-swatch-btn" style="background:#10B981;" onclick="selectPresetColor('#10B981')" title="Hijau Emerald"></button>
+              <button class="color-swatch-btn" style="background:#059669;" onclick="selectPresetColor('#059669')" title="Hijau Mint"></button>
+              <button class="color-swatch-btn" style="background:#06B6D4;" onclick="selectPresetColor('#06B6D4')" title="Cyan Aqua"></button>
+              <button class="color-swatch-btn" style="background:#0EA5E9;" onclick="selectPresetColor('#0EA5E9')" title="Biru Langit"></button>
+              <button class="color-swatch-btn" style="background:#3B82F6;" onclick="selectPresetColor('#3B82F6')" title="Biru Elektrik"></button>
+              <button class="color-swatch-btn" style="background:#2563EB;" onclick="selectPresetColor('#2563EB')" title="Biru Royal"></button>
+
+              <button class="color-swatch-btn" style="background:#6366F1;" onclick="selectPresetColor('#6366F1')" title="Indigo"></button>
+              <button class="color-swatch-btn" style="background:#8B5CF6;" onclick="selectPresetColor('#8B5CF6')" title="Ungu Neon"></button>
+              <button class="color-swatch-btn" style="background:#A855F7;" onclick="selectPresetColor('#A855F7')" title="Ungu Amethyst"></button>
+              <button class="color-swatch-btn" style="background:#EC4899;" onclick="selectPresetColor('#EC4899')" title="Pink Magenta"></button>
+              <button class="color-swatch-btn" style="background:#D946EF;" onclick="selectPresetColor('#D946EF')" title="Fuchsia"></button>
+              <button class="color-swatch-btn" style="background:#0F172A;" onclick="selectPresetColor('#0F172A')" title="Dark Slate"></button>
             </div>
           </div>
         </div>
@@ -4542,20 +4565,33 @@
       setAppAccent(hexColor, null);
     }
 
+    function hslToHex(h, s, l) {
+      l /= 100;
+      const a = s * Math.min(l, 1 - l) / 100;
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+
+    function onHueSliderInput(hue) {
+      const hex = hslToHex(parseInt(hue), 85, 55);
+      onModalColorChange(hex);
+    }
+
     function onModalHexInput(value) {
       if (!value) return;
-      if (!value.startsWith('#')) value = '#' + value;
-      if (/^#([0-9A-F]{3}){1,2}$/i.test(value)) {
-        onModalColorChange(value);
-        const colorInput = document.getElementById('modalColorInput');
-        if (colorInput) colorInput.value = value;
+      let hex = value.trim();
+      if (!hex.startsWith('#')) hex = '#' + hex;
+      if (/^#([0-9A-F]{3,6})$/i.test(hex)) {
+        onModalColorChange(hex);
       }
     }
 
     function selectPresetColor(hexColor) {
       onModalColorChange(hexColor);
-      const colorInput = document.getElementById('modalColorInput');
-      if (colorInput) colorInput.value = hexColor;
       setTimeout(closeColorModal, 280);
     }
 
@@ -4927,7 +4963,7 @@
     function saveHistoryList(list) {
       try {
         localStorage.setItem('snapcat_url_history', JSON.stringify(list));
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function addUrlToHistory(urlStr) {
