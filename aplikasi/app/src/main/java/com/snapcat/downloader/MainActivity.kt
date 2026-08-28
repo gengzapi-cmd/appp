@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var webView: WebView
+    lateinit var webView: WebView
 
     companion object {
         private var activeInstance: MainActivity? = null
