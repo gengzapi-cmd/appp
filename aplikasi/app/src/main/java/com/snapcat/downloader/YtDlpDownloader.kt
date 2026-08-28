@@ -2,9 +2,9 @@ package com.snapcat.downloader
 
 import android.content.Context
 import android.net.Uri
-import com.ya.youtubedl_android.YoutubeDL
-import com.ya.youtubedl_android.YoutubeDLRequest
-import com.ya.youtubedl_android.ffmpeg.FFmpeg
+import com.yausername.youtubedl_android.YoutubeDL
+import com.yausername.youtubedl_android.YoutubeDLRequest
+import com.yausername.youtubedl_android.ffmpeg.FFmpeg
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -67,14 +67,14 @@ object YtDlpDownloader {
             val directUrls = response.out.trim().split("\n")
 
             if (directUrls.isNotEmpty() && directUrls[0].startsWith("http")) {
-                val mediaUrl = directUrls[0]
+                val mediaUrlString: String = directUrls[0].trim()
                 val ext = if (isAudio) "mp3" else "mp4"
                 val mimeType = if (isAudio) "audio/mpeg" else "video/mp4"
                 val timeStamp = System.currentTimeMillis()
                 val fileName = "SnapCat_Media_$timeStamp.$ext"
 
                 val httpReq = Request.Builder()
-                    .url(mediaUrl)
+                    .url(mediaUrlString)
                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .build()
 
